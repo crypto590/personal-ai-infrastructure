@@ -1,0 +1,41 @@
+# ============================================
+# Claude Code System Files (DO NOT BACKUP)
+# ============================================
+__store.db
+history.jsonl
+settings.json
+settings.local.json
+debug/
+file-history/
+session-env/
+shell-snapshots/
+statsig/
+todos/
+ide/
+projects/                # Project tracking files
+*.log
+
+# ============================================
+# Plugins (Managed by Claude Code)
+# ============================================
+# Plugins are external packages that can be reinstalled
+# Don't backup to avoid nested git repo issues
+plugins/
+
+# ============================================
+# macOS
+# ============================================
+.DS_Store
+
+# ============================================
+# Backup Files
+# ============================================
+*.backup
+CLAUDE.md.backup
+
+# ============================================
+# Optional: Sensitive Information
+# ============================================
+# Uncomment if you store sensitive data:
+# context/identity/sensitive-info.md
+# context/identity/api-keys.md
