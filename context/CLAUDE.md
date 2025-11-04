@@ -13,16 +13,16 @@ This is a **Personal AI Infrastructure** based on Daniel Miessler's architecture
 **EVERY TIME you begin working, you MUST:**
 
 1. **Read these core files IN THIS ORDER:**
-   - `~/.claude/context/CLAUDE.md` (this file)
-   - `~/.claude/context/identity/profile.md`
-   - `~/.claude/context/identity/preferences.md`
+   - `/Users/coreyyoung/Claude/context/CLAUDE.md` (this file)
+   - `/Users/coreyyoung/Claude/context/identity/profile.md`
+   - `/Users/coreyyoung/Claude/context/identity/preferences.md`
 
 2. **Acknowledge context loading by stating:**
    - "PAI loaded: [Your Name]'s infrastructure ready"
    - Note any skills or knowledge areas you've loaded
 
 3. **Progressive skill loading:**
-   - Scan `~/.claude/skills/` directory structure
+   - Scan `/Users/coreyyoung/Claude/skills/` directory structure
    - Load skill metadata (descriptions only) for awareness
    - Load full skill content ONLY when triggered by task requirements
 
@@ -59,16 +59,16 @@ User request → Scan skill metadata → Identify relevant skills → Load full 
 
 **Example:**
 - User: "Build a Next.js API endpoint"
-- You scan: `~/.claude/skills/technical/` metadata
+- You scan: `/Users/coreyyoung/Claude/skills/technical/` metadata
 - You identify: `web-dev-nextjs.md` skill
-- You load: Full Next.js skill + relevant context from `~/.claude/context/knowledge/frameworks/nextjs/`
+- You load: Full Next.js skill + relevant context from `/Users/coreyyoung/Claude/context/knowledge/frameworks/nextjs/`
 - You execute: Using loaded knowledge
 
 ---
 
 ## 📁 Directory Structure Guide
 
-### `~/.claude/skills/` - Capability-Based Skills Library
+### `/Users/coreyyoung/Claude/skills/` - Capability-Based Skills Library
 
 Skills are organized by **capability type**, NOT by project:
 
@@ -88,7 +88,7 @@ skills/
 - **Examples:** Usage patterns
 - **Dependencies:** Other skills or context required
 
-### `~/.claude/context/` - The Knowledge Brain
+### `/Users/coreyyoung/Claude/context/` - The Knowledge Brain
 
 Central repository of all knowledge, identity, and preferences:
 
@@ -119,7 +119,7 @@ context/
 - Use relative links for cross-references
 - Keep files focused on single topics
 
-### `~/.claude/commands/` - Custom Workflows
+### `/Users/coreyyoung/Claude/commands/` - Custom Workflows
 
 **Purpose:** Store custom command workflows and automations
 
@@ -130,7 +130,7 @@ context/
 - `code-review.md` - Code review workflow
 - `research-task.md` - Research methodology
 
-### `~/.claude/hooks/` - Context Management
+### `/Users/coreyyoung/Claude/hooks/` - Context Management
 
 **Purpose:** Ensure PAI context loads properly and validate usage
 
@@ -224,13 +224,13 @@ Projects should have lightweight CLAUDE.md files that **LINK** to PAI:
 # Project: MyApp
 
 ## Load PAI Skills
-- Read: ~/.claude/skills/technical/web-dev-nextjs.md
-- Read: ~/.claude/skills/technical/typescript-patterns.md
-- Read: ~/.claude/skills/domain/payment-processing.md
+- Read: /Users/coreyyoung/Claude/skills/technical/web-dev-nextjs.md
+- Read: /Users/coreyyoung/Claude/skills/technical/typescript-patterns.md
+- Read: /Users/coreyyoung/Claude/skills/domain/payment-processing.md
 
 ## Load Context
-- Read: ~/.claude/context/knowledge/frameworks/nextjs/
-- Read: ~/.claude/context/knowledge/domains/payment-processing/
+- Read: /Users/coreyyoung/Claude/context/knowledge/frameworks/nextjs/
+- Read: /Users/coreyyoung/Claude/context/knowledge/domains/payment-processing/
 
 ## Project-Specific Context
 - Database: PostgreSQL on Supabase
@@ -308,24 +308,24 @@ The PAI gets smarter with every interaction.
 
 **Check PAI structure:**
 ```bash
-tree -L 2 ~/.claude/
+tree -L 2 /Users/coreyyoung/Claude/
 ```
 
 **List available skills:**
 ```bash
-find ~/.claude/skills -name "*.md" -type f
+find /Users/coreyyoung/Claude/skills -name "*.md" -type f
 ```
 
 **Search knowledge base:**
 ```bash
-grep -r "search term" ~/.claude/context/knowledge/
+grep -r "search term" /Users/coreyyoung/Claude/context/knowledge/
 ```
 
 **Validate PAI:**
 ```bash
 # Ensure core files exist
-ls ~/.claude/context/identity/profile.md
-ls ~/.claude/context/CLAUDE.md
+ls /Users/coreyyoung/Claude/context/identity/profile.md
+ls /Users/coreyyoung/Claude/context/CLAUDE.md
 ```
 
 ---

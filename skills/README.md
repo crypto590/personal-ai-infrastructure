@@ -177,7 +177,7 @@ If yes → It's a skill!
 ### Step 3: Create the File
 
 ```bash
-cd ~/.claude/skills/[category]
+cd /Users/coreyyoung/Claude/skills/[category]
 touch skill-name.md
 ```
 
@@ -221,11 +221,11 @@ Skills can reference each other:
 ## Dependencies
 
 **Related skills:**
-- `~/.claude/skills/technical/api-design.md`
-- `~/.claude/skills/technical/error-handling.md`
+- `/Users/coreyyoung/Claude/skills/technical/api-design.md`
+- `/Users/coreyyoung/Claude/skills/technical/error-handling.md`
 
 **Required context:**
-- `~/.claude/context/knowledge/frameworks/nextjs/`
+- `/Users/coreyyoung/Claude/context/knowledge/frameworks/nextjs/`
 ```
 
 ---
@@ -324,4 +324,4 @@ Load this skill when:
 
 ---
 
-**Questions?** See `~/.claude/context/CLAUDE.md` for complete PAI documentation.
+**Questions?** See `/Users/coreyyoung/Claude/context/CLAUDE.md` for complete PAI documentation.

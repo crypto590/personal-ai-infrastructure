@@ -21,7 +21,7 @@ context/
 - **Context** = Knowledge and reference material (WHAT you know)
 - **Skills** = Capabilities and approaches (HOW you do things)
 
-This directory contains the **what you know**, while `~/.claude/skills/` contains the **how you work**.
+This directory contains the **what you know**, while `/Users/coreyyoung/Claude/skills/` contains the **how you work**.
 
 ---
 
@@ -205,13 +205,13 @@ This keeps token usage low while maintaining full access to knowledge.
 
 ```bash
 # Find TODO markers (unfilled sections)
-grep -r "TODO" ~/.claude/context/
+grep -r "TODO" /Users/coreyyoung/Claude/context/
 
 # List all knowledge files
-find ~/.claude/context/knowledge -name "*.md"
+find /Users/coreyyoung/Claude/context/knowledge -name "*.md"
 
 # Search for specific knowledge
-grep -r "search term" ~/.claude/context/knowledge/
+grep -r "search term" /Users/coreyyoung/Claude/context/knowledge/
 ```
 
 ---

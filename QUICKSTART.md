@@ -20,7 +20,7 @@ PAI is a central knowledge and skills repository that makes AI assistance consis
 ## 📁 Directory Structure at a Glance
 
 ```
-~/.claude/
+/Users/coreyyoung/Claude/
 ├── CLAUDE.md                      # Index (points to context/CLAUDE.md)
 ├── QUICKSTART.md                  # This file
 │
@@ -65,13 +65,13 @@ These files teach AI who you are and how you work:
 
 ```bash
 # Edit your profile
-open ~/.claude/context/identity/profile.md
+open /Users/coreyyoung/Claude/context/identity/profile.md
 
 # Edit your preferences
-open ~/.claude/context/identity/preferences.md
+open /Users/coreyyoung/Claude/context/identity/preferences.md
 
 # Edit your values (optional but recommended)
-open ~/.claude/context/identity/values.md
+open /Users/coreyyoung/Claude/context/identity/values.md
 ```
 
 **Priority sections to fill in:**
@@ -89,7 +89,7 @@ open ~/.claude/context/identity/values.md
 Understand how PAI works:
 
 ```bash
-open ~/.claude/context/CLAUDE.md
+open /Users/coreyyoung/Claude/context/CLAUDE.md
 ```
 
 **Key sections:**
@@ -104,8 +104,8 @@ Add to `~/.zshrc` (or `~/.bashrc` if you use bash):
 
 ```bash
 # Add these lines
-export CLAUDE_HOME="$HOME/.claude"
-export PAI_DIR="$HOME/.claude"
+export CLAUDE_HOME="/Users/coreyyoung/Claude"
+export PAI_DIR="/Users/coreyyoung/Claude"
 
 # Reload shell
 source ~/.zshrc
@@ -199,7 +199,7 @@ Create a skill when you have a **reusable capability** that applies across proje
 
 ```bash
 # Choose appropriate category
-cd ~/.claude/skills/technical
+cd /Users/coreyyoung/Claude/skills/technical
 
 # Create skill file
 touch api-design.md
@@ -228,19 +228,19 @@ Add to `context/knowledge/` when you have **reference information** AI should kn
 
 ```bash
 # Programming language knowledge
-~/.claude/context/knowledge/languages/typescript/async-patterns.md
+/Users/coreyyoung/Claude/context/knowledge/languages/typescript/async-patterns.md
 
 # Framework knowledge
-~/.claude/context/knowledge/frameworks/nextjs/server-actions.md
+/Users/coreyyoung/Claude/context/knowledge/frameworks/nextjs/server-actions.md
 
 # Domain expertise
-~/.claude/context/knowledge/domains/payment-processing/compliance.md
+/Users/coreyyoung/Claude/context/knowledge/domains/payment-processing/compliance.md
 
 # Patterns
-~/.claude/context/knowledge/patterns/api-design/rest-patterns.md
+/Users/coreyyoung/Claude/context/knowledge/patterns/api-design/rest-patterns.md
 
 # API docs
-~/.claude/context/knowledge/apis/stripe-integration.md
+/Users/coreyyoung/Claude/context/knowledge/apis/stripe-integration.md
 ```
 
 ---
@@ -255,13 +255,13 @@ Keep project files lightweight - they should mostly **reference** PAI:
 # Project: [Project Name]
 
 ## Load PAI Skills
-- Read: ~/.claude/skills/technical/web-dev-nextjs.md
-- Read: ~/.claude/skills/technical/typescript-patterns.md
-- Read: ~/.claude/skills/domain/[your-domain].md
+- Read: /Users/coreyyoung/Claude/skills/technical/web-dev-nextjs.md
+- Read: /Users/coreyyoung/Claude/skills/technical/typescript-patterns.md
+- Read: /Users/coreyyoung/Claude/skills/domain/[your-domain].md
 
 ## Load Context
-- Read: ~/.claude/context/knowledge/frameworks/nextjs/
-- Read: ~/.claude/context/knowledge/domains/[your-domain]/
+- Read: /Users/coreyyoung/Claude/context/knowledge/frameworks/nextjs/
+- Read: /Users/coreyyoung/Claude/context/knowledge/domains/[your-domain]/
 
 ## Project-Specific Details
 
@@ -295,7 +295,7 @@ Keep project files lightweight - they should mostly **reference** PAI:
 ### Learning a New Technology
 
 1. Research the technology
-2. Add knowledge file: `~/.claude/context/knowledge/frameworks/[tech]/overview.md`
+2. Add knowledge file: `/Users/coreyyoung/Claude/context/knowledge/frameworks/[tech]/overview.md`
 3. Create skill if there's a reusable pattern
 4. Knowledge now available for all future projects
 
@@ -308,7 +308,7 @@ Keep project files lightweight - they should mostly **reference** PAI:
 
 ### Refining Your Identity
 
-1. Edit `~/.claude/context/identity/profile.md` as you gain new skills
+1. Edit `/Users/coreyyoung/Claude/context/identity/profile.md` as you gain new skills
 2. Update `preferences.md` as you discover better workflows
 3. AI assistance improves automatically
 
@@ -356,16 +356,16 @@ Keep project files lightweight - they should mostly **reference** PAI:
 
 ```bash
 # List all skills
-find ~/.claude/skills -name "*.md"
+find /Users/coreyyoung/Claude/skills -name "*.md"
 
 # Search for specific knowledge
-grep -r "search term" ~/.claude/context/knowledge/
+grep -r "search term" /Users/coreyyoung/Claude/context/knowledge/
 
 # Check identity completeness
-cat ~/.claude/context/identity/profile.md | grep TODO
+cat /Users/coreyyoung/Claude/context/identity/profile.md | grep TODO
 
 # Verify structure
-tree -L 3 ~/.claude/
+tree -L 3 /Users/coreyyoung/Claude/
 ```
 
 ---
@@ -409,11 +409,11 @@ See also: [API Patterns](../../knowledge/patterns/api-design/rest-patterns.md)
 **Check:**
 ```bash
 # Verify core files exist
-ls ~/.claude/context/CLAUDE.md
-ls ~/.claude/context/identity/profile.md
+ls /Users/coreyyoung/Claude/context/CLAUDE.md
+ls /Users/coreyyoung/Claude/context/identity/profile.md
 
 # Verify hook exists
-ls ~/.claude/hooks/context-loader.ts
+ls /Users/coreyyoung/Claude/hooks/context-loader.ts
 ```
 
 **Solution:** Fill in at least basic profile information.
@@ -428,8 +428,8 @@ ls ~/.claude/hooks/context-loader.ts
 
 **Search:**
 ```bash
-find ~/.claude/skills -name "*keyword*"
-grep -r "keyword" ~/.claude/skills/
+find /Users/coreyyoung/Claude/skills -name "*keyword*"
+grep -r "keyword" /Users/coreyyoung/Claude/skills/
 ```
 
 ### Skill Growing Too Large
@@ -441,7 +441,7 @@ grep -r "keyword" ~/.claude/skills/
 ## 📖 Further Reading
 
 **Essential:**
-- `~/.claude/context/CLAUDE.md` - Complete PAI documentation
+- `/Users/coreyyoung/Claude/context/CLAUDE.md` - Complete PAI documentation
 
 **References:**
 - [Daniel Miessler's Blog Post](https://danielmiessler.com/blog/personal-ai-infrastructure)
@@ -454,7 +454,7 @@ grep -r "keyword" ~/.claude/skills/
 1. ✅ Fill in `identity/profile.md` (at least basic info)
 2. ✅ Fill in `identity/preferences.md` (communication & code preferences)
 3. ✅ Add environment variables to `~/.zshrc`
-4. ✅ Read `context/CLAUDE.md` to understand the system
+4. ✅ Read `/Users/coreyyoung/Claude/context/CLAUDE.md` to understand the system
 5. ✅ Create your first skill
 6. ✅ Add your first knowledge file
 7. ✅ Use PAI in a project
@@ -463,4 +463,4 @@ grep -r "keyword" ~/.claude/skills/
 
 ---
 
-**Questions?** Refer to `~/.claude/context/CLAUDE.md` for complete documentation.
+**Questions?** Refer to `/Users/coreyyoung/Claude/context/CLAUDE.md` for complete documentation.

@@ -111,4 +111,4 @@ As you develop recurring workflows, add them here as command files.
 
 ---
 
-**Questions?** See `~/.claude/context/CLAUDE.md` for complete PAI documentation.
+**Questions?** See `/Users/coreyyoung/Claude/context/CLAUDE.md` for complete PAI documentation.

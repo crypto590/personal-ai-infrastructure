@@ -20,7 +20,7 @@ const hook: Hook = {
   on: "user-prompt-submit",
 
   async run({ messages, updateSystemPrompt }) {
-    const claudeHome = join(homedir(), ".claude");
+    const claudeHome = "/Users/coreyyoung/Claude";
     const contextDir = join(claudeHome, "context");
 
     // Core files that should always be loaded
@@ -52,11 +52,11 @@ const hook: Hook = {
 # PAI Context Loaded
 
 Before responding, ensure you have loaded:
-- ~/.claude/context/CLAUDE.md (master PAI documentation)
-- ~/.claude/context/identity/profile.md (user identity and expertise)
-- ~/.claude/context/identity/preferences.md (working preferences)
+- /Users/coreyyoung/Claude/context/CLAUDE.md (master PAI documentation)
+- /Users/coreyyoung/Claude/context/identity/profile.md (user identity and expertise)
+- /Users/coreyyoung/Claude/context/identity/preferences.md (working preferences)
 
-Skills available at: ~/.claude/skills/
+Skills available at: /Users/coreyyoung/Claude/skills/
 - Scan skill directories for metadata
 - Load full skill content only when task requires it
 
