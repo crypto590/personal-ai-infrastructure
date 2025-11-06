@@ -17,7 +17,7 @@ CLAUDE_HOME = Path("/Users/coreyyoung/Claude")
 CORE_SKILL = CLAUDE_HOME / "skills" / "CORE" / "SKILL.md"
 
 def main():
-    """Minimal hook - just verify PAI is accessible"""
+    """Load CORE skill context automatically for all prompts"""
 
     # Read hook input from stdin (provided by Claude Code)
     try:
@@ -26,14 +26,22 @@ def main():
         # Exit silently if no valid input
         sys.exit(0)
 
-    # Check if CORE skill exists (silent check, no output if it does)
+    # Check if CORE skill exists
     if not CORE_SKILL.exists():
         # Only warn if CORE skill is missing
-        print("⚠️  PAI Setup: CORE skill not found")
-        print(f"   Expected: {CORE_SKILL}")
-        print("   Run: Create CORE skill to set up your identity")
+        print("⚠️  PAI Setup: CORE skill not found", file=sys.stderr)
+        print(f"   Expected: {CORE_SKILL}", file=sys.stderr)
+        print("   Run: Create CORE skill to set up your identity", file=sys.stderr)
+        sys.exit(0)
 
-    # Exit successfully (no forced context loading)
+    # Load and inject CORE skill context
+    try:
+        core_content = CORE_SKILL.read_text()
+        # Output the CORE skill content to stdout for Claude Code to inject
+        print(core_content)
+    except Exception as e:
+        print(f"⚠️  Error loading CORE skill: {e}", file=sys.stderr)
+
     sys.exit(0)
 
 if __name__ == "__main__":
