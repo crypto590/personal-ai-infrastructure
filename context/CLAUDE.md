@@ -26,6 +26,11 @@ This is a **Personal AI Infrastructure** based on Daniel Miessler's architecture
    - Load skill metadata (descriptions only) for awareness
    - Load full skill content ONLY when triggered by task requirements
 
+4. **CRITICAL: Before creating or modifying ANY skills:**
+   - **MUST READ:** `/Users/coreyyoung/Claude/skills/core/skill-creation/ANTHROPIC_REFERENCE.md`
+   - **Key rule:** Skills MUST be `skill-name/SKILL.md` (directory + file), NEVER `skill-name.md`
+   - Follow all Anthropic specifications exactly
+
 ---
 
 ## 🏗️ PAI Architecture Explained
@@ -63,6 +68,46 @@ User request → Scan skill metadata → Identify relevant skills → Load full 
 - You identify: `web-dev-nextjs.md` skill
 - You load: Full Next.js skill + relevant context from `/Users/coreyyoung/Claude/context/knowledge/frameworks/nextjs/`
 - You execute: Using loaded knowledge
+
+---
+
+## 🔗 PAI Directory Architecture
+
+### Physical vs. Logical Structure
+
+The PAI uses a **symlink architecture** that separates runtime data from your managed content:
+
+#### **Physical Location (Where Files Live):**
+- **`~/Claude/`** - Your PAI content repository
+  - Visible in Finder and IDEs
+  - Git-tracked for version control
+  - Contains: skills/, context/, commands/, agents/, hooks/
+
+- **`~/.claude/`** - Claude Code runtime directory
+  - Contains operational files (history, sessions, debug logs)
+  - NOT version controlled
+  - Contains symlinks that point to ~/Claude/
+
+#### **Symlink Setup:**
+```bash
+~/.claude/skills    → ~/Claude/skills/
+~/.claude/context   → ~/Claude/context/
+~/.claude/commands  → ~/Claude/commands/
+~/.claude/agents    → ~/Claude/agents/
+~/.claude/hooks     → ~/Claude/hooks/
+```
+
+#### **Benefits of This Architecture:**
+✅ **Visibility:** Edit PAI files easily in Finder/VSCode
+✅ **Version Control:** Commit ~/Claude/ to GitHub
+✅ **Global Access:** Claude Code finds skills in `~/.claude/`
+✅ **Single Source:** Files exist once, accessed from both locations
+
+#### **How It Works:**
+- When Claude Code looks for `~/.claude/skills/technical/swift-mvc`, it follows the symlink to `~/Claude/skills/technical/swift-mvc`
+- You edit files in `~/Claude/` (visible, git-tracked)
+- Claude Code reads them via `~/.claude/` (where it expects them)
+- No file duplication, no sync issues
 
 ---
 
@@ -308,24 +353,49 @@ The PAI gets smarter with every interaction.
 
 **Check PAI structure:**
 ```bash
-tree -L 2 /Users/coreyyoung/Claude/
+tree -L 2 ~/Claude/
+```
+
+**Verify symlinks are working:**
+```bash
+ls -la ~/.claude/ | grep -E "skills|context|commands|agents|hooks"
+# Should show symlinks (lrwxr-xr-x) pointing to ~/Claude/
+```
+
+**Recreate symlinks if needed:**
+```bash
+# Remove old symlinks (if they exist)
+rm ~/.claude/skills ~/.claude/context ~/.claude/commands ~/.claude/agents ~/.claude/hooks 2>/dev/null
+
+# Create new symlinks
+ln -s ~/Claude/skills ~/.claude/skills
+ln -s ~/Claude/context ~/.claude/context
+ln -s ~/Claude/commands ~/.claude/commands
+ln -s ~/Claude/agents ~/.claude/agents
+ln -s ~/Claude/hooks ~/.claude/hooks
 ```
 
 **List available skills:**
 ```bash
-find /Users/coreyyoung/Claude/skills -name "*.md" -type f
+find ~/Claude/skills -name "SKILL.md" -type f
+# OR via symlink:
+find ~/.claude/skills -name "SKILL.md" -type f
 ```
 
 **Search knowledge base:**
 ```bash
-grep -r "search term" /Users/coreyyoung/Claude/context/knowledge/
+grep -r "search term" ~/Claude/context/knowledge/
 ```
 
 **Validate PAI:**
 ```bash
 # Ensure core files exist
-ls /Users/coreyyoung/Claude/context/identity/profile.md
-ls /Users/coreyyoung/Claude/context/CLAUDE.md
+ls ~/Claude/context/identity/profile.md
+ls ~/Claude/context/CLAUDE.md
+
+# Verify symlinks are functional
+test -L ~/.claude/skills && echo "✅ Skills symlink OK" || echo "❌ Skills symlink missing"
+test -L ~/.claude/context && echo "✅ Context symlink OK" || echo "❌ Context symlink missing"
 ```
 
 ---
