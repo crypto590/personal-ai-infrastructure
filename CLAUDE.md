@@ -3,7 +3,7 @@
 **Architecture:** Skills-as-Containers (November 2025)
 
 For complete documentation, read:
-`/Users/coreyyoung/Claude/context/CLAUDE.md`
+`/Users/coreyyoung/.claude/context/CLAUDE.md`
 
 ---
 
@@ -11,15 +11,15 @@ For complete documentation, read:
 
 **Your PAI uses progressive disclosure for 92.5% token reduction:**
 
-1. **CORE Skill** - Your identity lives in `/Users/coreyyoung/Claude/skills/CORE/SKILL.md`
+1. **CORE Skill** - Your identity lives in `/Users/coreyyoung/.claude/skills/CORE/SKILL.md`
    - Tier 1 (YAML frontmatter): ~300 tokens, always loaded
    - Tier 2 (body content): ~4000 tokens, loads on-demand
 
-2. **Skills** - Organized in `/Users/coreyyoung/Claude/skills/`
+2. **Skills** - Organized in `/Users/coreyyoung/.claude/skills/`
    - Each skill is a directory with `SKILL.md`
    - Optional `workflows/` subdirectory for related tasks
 
-3. **Knowledge** - Reference materials in `/Users/coreyyoung/Claude/context/knowledge/`
+3. **Knowledge** - Reference materials in `/Users/coreyyoung/.claude/context/knowledge/`
    - Languages, frameworks, domains, patterns
    - Skills load these on-demand as needed
 
@@ -27,31 +27,43 @@ For complete documentation, read:
 
 ## 🏗️ Architecture
 
-### Symlink Structure (Visibility + Version Control)
+### Unified Structure (.gitignore-based Version Control)
 ```
-~/Claude/              # Visible in Finder, git-tracked
-├── skills/            # Skill containers
-│   ├── CORE/         # Your identity (replaces context/identity/)
+~/.claude/             # All files in one location
+├── .git/              # Git repository
+├── .gitignore         # Separates tracked PAI from system files
+├── skills/            # Skill containers (tracked)
+│   ├── CORE/         # Your identity
 │   ├── technical/    # Technical skills
 │   ├── business/     # Business skills
 │   └── domain/       # Domain expertise
-├── context/          # Knowledge base (reference materials)
+├── context/           # Knowledge base (tracked)
 │   └── knowledge/    # Languages, frameworks, patterns
-├── commands/         # Custom workflows
-├── agents/           # Agent definitions
-└── hooks/            # Minimal context loader
-
-~/.claude/            # Runtime directory (symlinks to ~/Claude/)
-├── skills → ~/Claude/skills
-├── context → ~/Claude/context
-├── commands → ~/Claude/commands
-└── [runtime files: history, sessions, etc.]
+├── commands/          # Custom workflows (tracked)
+├── agents/            # Agent definitions (tracked)
+├── hooks/             # Minimal context loader (tracked)
+├── CLAUDE.md          # Documentation (tracked)
+├── QUICKSTART.md      # Quick reference (tracked)
+├── PLUGINS.md         # Plugin docs (tracked)
+└── [system files]     # Runtime files (ignored by .gitignore)
+    ├── history.jsonl
+    ├── settings.json
+    ├── debug/
+    ├── file-history/
+    ├── session-env/
+    ├── shell-snapshots/
+    ├── statsig/
+    ├── todos/
+    ├── ide/
+    ├── projects/
+    └── plugins/
 ```
 
 **Benefits:**
-- Edit files in Finder/VSCode (visible in ~/Claude/)
-- Commit to GitHub (version controlled)
-- Claude Code finds everything (via ~/.claude/ symlinks)
+- Single source of truth - no symlinks
+- Smart .gitignore separates PAI from system files
+- Claude Code finds everything reliably
+- Simpler mental model and maintenance
 
 ---
 
@@ -100,7 +112,7 @@ key_info: "Critical information (always available)"
 ## 🎯 Key Files
 
 ### Your Identity: CORE Skill
-`/Users/coreyyoung/Claude/skills/CORE/SKILL.md`
+`/Users/coreyyoung/.claude/skills/CORE/SKILL.md`
 
 Fill out the CORE skill to establish your:
 - Professional background and expertise
@@ -111,7 +123,7 @@ Fill out the CORE skill to establish your:
 **This replaces the old `context/identity/` directory.**
 
 ### Master Documentation
-`/Users/coreyyoung/Claude/context/CLAUDE.md`
+`/Users/coreyyoung/.claude/context/CLAUDE.md`
 
 Complete PAI documentation including:
 - Detailed architecture explanation
@@ -124,22 +136,22 @@ Complete PAI documentation including:
 
 **Check PAI structure:**
 ```bash
-tree -L 2 ~/Claude/
+tree -L 2 ~/.claude/
 ```
 
-**Verify symlinks:**
+**Verify git tracking:**
 ```bash
-ls -la ~/.claude/ | grep -E "skills|context|commands"
+cd ~/.claude && git status
 ```
 
 **List available skills:**
 ```bash
-find ~/Claude/skills -name "SKILL.md" -type f
+find ~/.claude/skills -name "SKILL.md" -type f
 ```
 
 **Search knowledge base:**
 ```bash
-grep -r "search term" ~/Claude/context/knowledge/
+grep -r "search term" ~/.claude/context/knowledge/
 ```
 
 ---
@@ -148,24 +160,37 @@ grep -r "search term" ~/Claude/context/knowledge/
 
 - **Daniel Miessler's PAI Blog:** https://danielmiessler.com/blog/personal-ai-infrastructure
 - **Daniel Miessler's GitHub:** https://github.com/danielmiessler/Personal_AI_Infrastructure
-- **Architecture Version:** v1.2.0 (November 2025)
-- **Local Documentation:** `/Users/coreyyoung/Claude/context/CLAUDE.md`
+- **Architecture Version:** v1.3.0 (November 2025)
+- **Local Documentation:** `/Users/coreyyoung/.claude/context/CLAUDE.md`
 
 ---
 
 ## ✨ Migration Notes
 
-**What Changed (November 2025):**
+### v1.3.0 (November 2025) - Unified Structure
+**What Changed:**
+- **Removed symlink architecture** - Everything now lives in `~/.claude/`
+- **Smart .gitignore** - Separates tracked PAI files from system files
+- **Simpler path resolution** - No more symlink issues with agents/skills
+- **Single source of truth** - Edit and commit from one location
+
+**Why This Change:**
+- Symlinks caused agent discovery issues in some projects
+- Simpler mental model - everything in one place
+- .gitignore is more reliable than symlink management
+- Easier maintenance and troubleshooting
+
+### v1.2.0 (November 2025) - Skills-as-Containers
+**What Changed:**
 - Identity moved from `context/identity/` → `skills/CORE/SKILL.md`
 - Hook simplified (zero forced context loading)
 - Skills use YAML frontmatter for progressive disclosure
 - Optional `workflows/` subdirectories for skill organization
 
 **What Stayed the Same:**
-- Symlink architecture (~/Claude/ → ~/.claude/)
 - Knowledge base structure (context/knowledge/)
 - Skills organized by capability type
-- Git-tracked in ~/Claude/
+- Git version control
 
 **Token Efficiency:**
 - Before: ~500 tokens overhead per request

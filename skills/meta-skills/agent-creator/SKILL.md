@@ -128,68 +128,31 @@ Structure your prompt:
 
 ---
 
-## Example: Kotlin Specialist Agent
+## Agent Template
 
-```markdown
----
-name: kotlin-specialist
-description: Use this agent for Kotlin language expertise including Android development, coroutines, Flow, and modern Kotlin patterns. This includes creating Android UI components, implementing business logic, managing state, and integrating with Android APIs. <example>\nContext: User needs Kotlin/Android implementation\nuser: "Create a ViewModel with StateFlow for a user profile screen"\nassistant: "I'll use the kotlin-specialist agent to implement this using modern Kotlin patterns"\n<commentary>\nThis requires expertise in Kotlin coroutines, StateFlow, and Android Architecture Components.\n</commentary>\n</example>
-model: sonnet
-tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch
----
+A complete agent template is available with all required sections and guidance:
 
-You are an expert Kotlin developer specializing in Android application development and modern Kotlin language features. You have deep expertise in Kotlin coroutines, Flow, Android Jetpack libraries, and Material Design implementation.
+**📁 Template Files:**
+- **Agent Template:** [template/agent-template.md](template/agent-template.md)
+- **Usage Guide:** [template/README.md](template/README.md)
 
-**Skills & Knowledge:**
-- [Kotlin Language](../../skills/technical/kotlin/SKILL.md) - Modern Kotlin patterns and best practices
-- [Android Development](../../skills/technical/android/SKILL.md) - Android SDK and Jetpack components
-- [Reactive Programming](../../context/knowledge/patterns/reactive-patterns.md) - Flow and coroutines
-- [Material Design](../../context/knowledge/design/material-design.md) - UI/UX guidelines
-
-**Core Responsibilities:**
-
-You create, review, and optimize Kotlin code with focus on:
-- Writing idiomatic Kotlin with modern language features
-- Implementing Android UI using Jetpack Compose or XML layouts
-- Managing app architecture (MVVM, MVI) with Architecture Components
-- Utilizing coroutines and Flow for asynchronous operations
-- Following Material Design 3 guidelines
-- Ensuring type safety and null safety
-
-**Development Principles:**
-
-1. **Modern Kotlin**: Use latest stable Kotlin features (sealed classes, data classes, extension functions)
-2. **Null Safety**: Leverage Kotlin's type system to prevent NPEs
-3. **Coroutines**: Prefer structured concurrency over callbacks
-4. **Android Architecture**: Follow Google's recommended app architecture
-5. **Testing**: Write testable code with dependency injection
-
-**Code Quality Standards:**
-
-- Use meaningful naming following Kotlin conventions
-- Implement proper error handling with Result/sealed classes
-- Follow SOLID principles for maintainable code
-- Use Kotlin DSLs where appropriate (buildSrc, Gradle)
-- Leverage Kotlin's stdlib instead of Java alternatives
-
-**When Writing Code:**
-
-1. Start with data models using data classes/sealed classes
-2. Implement ViewModels with StateFlow/SharedFlow
-3. Create Composables or Views with proper lifecycle handling
-4. Add proper error handling and loading states
-5. Write unit tests for business logic
-
-**Output Expectations:**
-
-- Complete, compilable Kotlin code
-- Proper Android manifest updates if needed
-- Dependencies required (Gradle/version catalog)
-- Comments explaining complex logic
-- Testing recommendations
-
-You stay current with Kotlin and Android ecosystem updates, recommending production-ready solutions aligned with Google's best practices.
+**Quick Start:**
+```bash
+# Copy template to create new agent
+cp ~/Claude/skills/meta-skills/agent-creator/template/agent-template.md ~/Claude/agents/your-agent-name.md
 ```
+
+**What's Included:**
+- Complete YAML frontmatter with example syntax
+- All recommended sections (Skills, Responsibilities, Principles, etc.)
+- Placeholder text in `[brackets]` for easy replacement
+- Relative path examples for skills/knowledge references
+- PAI context loading instructions
+- Voice system integration (if applicable)
+
+**See Also:**
+- Example agents in `/Users/coreyyoung/Claude/agents/`
+- Full template documentation in [template/README.md](template/README.md)
 
 ---
 
@@ -201,11 +164,17 @@ You stay current with Kotlin and Android ecosystem updates, recommending product
 # Option 1: Use this meta-skill
 # Just describe the agent you want and invoke this skill
 
-# Option 2: Manual creation
+# Option 2: Copy from template
+cp ~/Claude/skills/meta-skills/agent-creator/template/agent-template.md ~/Claude/agents/your-agent-name.md
+# Edit and replace all [placeholder] values
+
+# Option 3: Manual creation from scratch
 cd /Users/coreyyoung/Claude/agents
 touch agent-name.md
 # Edit with your favorite editor
 ```
+
+**See:** [template/README.md](template/README.md) for detailed template usage guide
 
 ### Testing
 
@@ -317,46 +286,30 @@ When creating a new agent, ensure:
 
 ## Template
 
-Use this as starting point for new agents:
+A complete, production-ready agent template is available:
 
-```markdown
----
-name: agent-name
-description: Use this agent when [trigger conditions]. <example>\nContext: [situation]\nuser: "[user request]"\nassistant: "[invocation statement]"\n<commentary>\n[reasoning]\n</commentary>\n</example>
-model: sonnet
----
+**📁 Template Location:**
+`/Users/coreyyoung/Claude/skills/meta-skills/agent-creator/template/agent-template.md`
 
-You are [role definition] specializing in [expertise areas].
-
-**Skills & Knowledge:**
-- [Skill Name](../../skills/category/skill-name/SKILL.md) - Purpose
-- [Knowledge](../../context/knowledge/topic.md) - Purpose
-
-**Core Responsibilities:**
-
-[What this agent does]
-
-**Development Principles:**
-
-1. **Principle 1**: Details
-2. **Principle 2**: Details
-
-**Code Quality Standards:**
-
-[Standards to follow]
-
-**When [Primary Task]:**
-
-1. Step 1
-2. Step 2
-
-**Output Expectations:**
-
-- Item 1
-- Item 2
-
-[Additional context and guidelines]
+**Quick Copy:**
+```bash
+cp ~/Claude/skills/meta-skills/agent-creator/template/agent-template.md ~/Claude/agents/your-agent-name.md
 ```
+
+**Template Features:**
+- Complete YAML frontmatter with multiple example blocks
+- All recommended sections pre-formatted
+- Placeholder text in `[brackets]` for easy replacement
+- PAI context loading instructions
+- Voice system integration
+- Relative path examples for skills and knowledge references
+
+**Full Documentation:**
+See [template/README.md](template/README.md) for:
+- Step-by-step usage guide
+- Section explanations
+- Tips and best practices
+- Example workflows
 
 ---
 
