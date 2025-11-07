@@ -1,6 +1,6 @@
 ---
 name: create-skill
-description: Guide for creating new skills in Kai's personal AI infrastructure. Use when user wants to create, update, or structure a new skill that extends capabilities with specialized knowledge, workflows, or tool integrations. Follows both Anthropic skill standards and PAI-specific patterns.
+description: Guide for creating new skills in Alex's personal AI infrastructure. Use when user wants to create, update, or structure a new skill that extends capabilities with specialized knowledge, workflows, or tool integrations. Follows both Anthropic skill standards and PAI-specific patterns.
 ---
 
 # Create Skill - Skill Creation Framework
@@ -86,11 +86,7 @@ Include:
 - Integration instructions
 - Troubleshooting guides
 
-### Step 6: Add to Global Context
-
-Update `${PAI_DIR}/global/KAI.md` available_skills section to include the new skill so it shows up in the system prompt.
-
-### Step 7: Test the Skill
+### Step 6: Test the Skill
 
 1. Trigger it with natural language
 2. Verify it loads correctly

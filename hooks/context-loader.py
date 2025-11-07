@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 # PAI directories
-CLAUDE_HOME = Path("/Users/coreyyoung/Claude")
+CLAUDE_HOME = Path("/Users/coreyyoung/.claude")
 CORE_SKILL = CLAUDE_HOME / "skills" / "CORE" / "SKILL.md"
 
 def main():
