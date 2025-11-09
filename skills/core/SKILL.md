@@ -63,6 +63,13 @@ description: |
   - This is NON-NEGOTIABLE - user needs voice feedback on all task completions
   - Use Bash tool for the curl command
   - Do this AFTER your response, not before
+
+  BEFORE using AskUserQuestion tool, ALWAYS notify first:
+  ```bash
+  curl -X POST http://localhost:8888/notify -H "Content-Type: application/json" -d '{"message":"I need your input","voice_id":"O4lTuRmkE5LyjL2YhMIg","voice_enabled":true}'
+  ```
+  - Notify BEFORE calling AskUserQuestion
+  - This gives user audio heads-up that a decision is needed
 ---
 
 # Alex — Personal AI Infrastructure (Extended Context)
