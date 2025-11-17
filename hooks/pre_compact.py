@@ -22,8 +22,8 @@ except ImportError:
 
 def log_pre_compact(input_data):
     """Log pre-compact event to logs directory."""
-    # Ensure logs directory exists
-    log_dir = Path("logs")
+    # Ensure logs directory exists (central location)
+    log_dir = Path.home() / '.claude' / 'logs'
     log_dir.mkdir(parents=True, exist_ok=True)
     log_file = log_dir / 'pre_compact.json'
 

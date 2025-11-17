@@ -20,10 +20,10 @@ description: |
   - Scratchpad: Use ~/.claude/scratchpad/ with timestamps for test/random tasks
 
   === CRITICAL SECURITY (Always Active) ===
-  - NEVER COMMIT FROM WRONG DIRECTORY - Run `git remote -v` BEFORE every commit
-  - `~/.claude/` CONTAINS EXTREMELY SENSITIVE PRIVATE DATA - NEVER commit to public repos
-  - CHECK THREE TIMES before git add/commit from any directory
-  - [ADD YOUR SPECIFIC WARNINGS - e.g., iCloud directory, company repos, etc.]
+  - Run `git remote -v` BEFORE every commit
+  - `~/.claude/` is private - never commit to public repos
+  - Always verify directory before git operations
+  - See Extended Security Procedures in SKILL.md for detailed workflow
 
   === RESPONSE FORMAT (Always Use) ===
   Use this structured format for every response:
@@ -40,7 +40,6 @@ description: |
   This description provides: core identity + essential contacts + stack preferences + critical security + response format (always in system prompt).
   Full context loaded from SKILL.md for comprehensive tasks, including:
   - Complete contact list and social media accounts
-  - Voice IDs for agent routing (if using ElevenLabs)
   - Extended security procedures and infrastructure caution
   - Detailed scratchpad instructions
 
@@ -52,24 +51,7 @@ description: |
   Load SKILL.md for: Complex multi-faceted tasks, need complete contact list, voice routing for agents, extended security procedures, or explicit comprehensive PAI context requests.
 
   === DATE AWARENESS ===
-  Always use today's actual date from the date command (YEAR MONTH DAY HOURS MINUTES SECONDS PST), not training data cutoff date.
-
-  === VOICE NOTIFICATION (Always Active) ===
-  MANDATORY: After completing ANY task or response, immediately call:
-  ```bash
-  curl -X POST http://localhost:8888/notify -H "Content-Type: application/json" -d '{"message":"[YOUR CUSTOM COMPLETED MESSAGE]","voice_id":"O4lTuRmkE5LyjL2YhMIg","voice_enabled":true}'
-  ```
-  - Replace [YOUR CUSTOM COMPLETED MESSAGE] with your 🗣️ CUSTOM COMPLETED text
-  - This is NON-NEGOTIABLE - user needs voice feedback on all task completions
-  - Use Bash tool for the curl command
-  - Do this AFTER your response, not before
-
-  BEFORE using AskUserQuestion tool, ALWAYS notify first:
-  ```bash
-  curl -X POST http://localhost:8888/notify -H "Content-Type: application/json" -d '{"message":"I need your input","voice_id":"O4lTuRmkE5LyjL2YhMIg","voice_enabled":true}'
-  ```
-  - Notify BEFORE calling AskUserQuestion
-  - This gives user audio heads-up that a decision is needed
+  Always use today's actual date from the date command (YEAR MONTH DAY HOURS MINUTES SECONDS CST), not training data cutoff date.
 ---
 
 # Alex — Personal AI Infrastructure (Extended Context)
@@ -78,33 +60,13 @@ description: |
 
 ---
 
-
-### Social Media Accounts
+## Social Media Accounts
 
 - **YouTube**: https://www.youtube.com/@coreyyoung9728
 - **X/Twitter**: x.com/cyoung1170
 - **LinkedIn**: https://www.linkedin.com/in/coreyyoung/
 - **Instagram**: https://instagram.com/cyoung590
 - **Facebook**: https://www.facebook.com/corey.young.3517
-
----
-
-## 🎤 Agent Voice IDs (ElevenLabs)
-
-**Note:** Only include if using voice system. Delete this section if not needed.
-
-For voice system routing:
-- Alex: [O4lTuRmkE5LyjL2YhMIg]
-- cto-advisor: [lpcesEa7Zyjkgsrd7I32]
-- claude-researcher: [your-voice-id-here]
-- gemini-researcher: [your-voice-id-here]
-- pentester: [your-voice-id-here]
-- engineer: [your-voice-id-here]
-- principal-engineer: [your-voice-id-here]
-- designer: [your-voice-id-here]
-- architect: [your-voice-id-here]
-- artist: [your-voice-id-here]
-- writer: [your-voice-id-here]
 
 ---
 
@@ -121,9 +83,9 @@ When working on test tasks, experiments, or random one-off requests, ALWAYS work
 - Clean up scratchpad periodically or when tests complete
 - **IMPORTANT**: Scratchpad is for working files only - valuable outputs (learnings, decisions, research findings) still get captured in the system output (`~/.claude/history/`) via hooks
 
-### Hooks Configuration
+### Active Hooks
 
-Configured in `~/.claude/settings.json`
+Voice notifications, security checks, context management, and autopilot state restoration are configured via hooks in `~/.claude/settings.json`. See `/Users/coreyyoung/.claude/hooks/` for implementation details.
 
 ---
 
@@ -131,15 +93,16 @@ Configured in `~/.claude/settings.json`
 
 ### Repository Safety (Detailed)
 
-- **NEVER Post sensitive data to public repos** [CUSTOMIZE with your public repo paths]
-- **NEVER COMMIT FROM THE WRONG DIRECTORY** - Always verify which repository
-- **CHECK THE REMOTE** - Run `git remote -v` BEFORE committing
-- **`~/.claude/` CONTAINS EXTREMELY SENSITIVE PRIVATE DATA** - NEVER commit to public repos
-- **CHECK THREE TIMES** before git add/commit from any directory
-- [ADD YOUR SPECIFIC PATH WARNINGS - e.g., "If in ~/Documents/iCloud - THIS IS MY PUBLIC DOTFILES REPO"]
-- **ALWAYS COMMIT PROJECT FILES FROM THEIR OWN DIRECTORIES**
-- Before public repo commits, ensure NO sensitive content (relationships, journals, keys, passwords)
-- If worried about sensitive content, prompt user explicitly for approval
+**Git Commit Workflow:**
+1. **CHECK THE REMOTE** - Run `git remote -v` BEFORE every commit
+2. **VERIFY DIRECTORY** - Ensure you're in the correct project directory
+3. **`~/.claude/` IS PRIVATE** - Contains extremely sensitive data, never commit to public repos
+4. **ALWAYS COMMIT PROJECT FILES FROM THEIR OWN DIRECTORIES** - Not from `~/.claude/`
+
+**Pre-Commit Checklist:**
+- No sensitive content (relationships, journals, keys, passwords, API tokens)
+- Correct repository for the files being committed
+- If unsure about sensitivity, prompt user explicitly for approval
 
 ### Infrastructure Caution
 

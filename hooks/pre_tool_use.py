@@ -82,31 +82,67 @@ def is_env_file_access(tool_name, tool_input):
     
     return False
 
+def detect_task_creation_intent(input_data):
+    """
+    Detect if user is trying to create persistent tasks from documents.
+    Returns (is_task_creation, should_remind) tuple.
+    """
+    # Get user message if available
+    user_message = input_data.get('user_message', '').lower()
+    tool_name = input_data.get('tool_name', '')
+
+    # Task creation patterns
+    task_creation_patterns = [
+        r'create tasks?\s+from',
+        r'parse\s+.+\s+into tasks?',
+        r'break\s+down\s+.+\s+into tasks?',
+        r'generate tasks?\s+from',
+        r'convert\s+.+\s+to tasks?',
+        r'tasks?\s+from\s+@',  # @file reference pattern
+    ]
+
+    # Check if user message contains task creation intent
+    is_task_intent = any(re.search(pattern, user_message) for pattern in task_creation_patterns)
+
+    # Check if using TodoWrite when task creation intent detected
+    if is_task_intent and tool_name == 'TodoWrite':
+        return True, True
+
+    return is_task_intent, False
+
 def main():
     try:
         # Read JSON input from stdin
         input_data = json.load(sys.stdin)
-        
+
         tool_name = input_data.get('tool_name', '')
         tool_input = input_data.get('tool_input', {})
-        
+
+        # Check for task creation intent with TodoWrite (remind, don't block)
+        _, should_remind = detect_task_creation_intent(input_data)
+        if should_remind:
+            print("⚠️  REMINDER: Use task_manager.py for PERSISTENT task creation, not TodoWrite", file=sys.stderr)
+            print("TodoWrite is for session-level work tracking only", file=sys.stderr)
+            print("See: ~/.claude/skills/business/task-management/SKILL.md", file=sys.stderr)
+            # Don't block, just remind - exit 0 to allow continuation
+
         # Check for .env file access (blocks access to sensitive environment files)
         if is_env_file_access(tool_name, tool_input):
             print("BLOCKED: Access to .env files containing sensitive data is prohibited", file=sys.stderr)
             print("Use .env.sample for template files instead", file=sys.stderr)
             sys.exit(2)  # Exit code 2 blocks tool call and shows error to Claude
-        
+
         # Check for dangerous rm -rf commands
         if tool_name == 'Bash':
             command = tool_input.get('command', '')
-            
+
             # Block rm -rf commands with comprehensive pattern matching
             if is_dangerous_rm_command(command):
                 print("BLOCKED: Dangerous rm command detected and prevented", file=sys.stderr)
                 sys.exit(2)  # Exit code 2 blocks tool call and shows error to Claude
         
-        # Ensure log directory exists
-        log_dir = Path.cwd() / 'logs'
+        # Ensure log directory exists (central location)
+        log_dir = Path.home() / '.claude' / 'logs'
         log_dir.mkdir(parents=True, exist_ok=True)
         log_path = log_dir / 'pre_tool_use.json'
         
