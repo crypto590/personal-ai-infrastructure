@@ -1,0 +1,23 @@
+{
+  "version": "1.0.0",
+  "source": null,
+  "created": "2025-11-17T16:15:00Z",
+  "last_updated": "2025-11-17T17:15:31.760227+00:00",
+  "tasks": [
+    {
+      "id": 4,
+      "title": "Design JSON schema",
+      "status": "completed",
+      "priority": "high",
+      "created": "2025-11-17T17:15:31.760189+00:00",
+      "updated": "2025-11-17T17:15:31.760193+00:00",
+      "completed": "2025-11-17T17:15:31.760056+00:00",
+      "source_file": "/Users/coreyyoung/.claude/docs/test-sprint.md",
+      "source_line": 21,
+      "notes": null,
+      "tags": [],
+      "blocked_by": null,
+      "depends_on": []
+    }
+  ]
+}

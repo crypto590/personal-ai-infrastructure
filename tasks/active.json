@@ -1,0 +1,134 @@
+{
+  "version": "1.0.0",
+  "source": null,
+  "created": "2025-11-17T16:15:00Z",
+  "last_updated": "2025-11-17T17:15:31.762991+00:00",
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Build slash command infrastructure",
+      "status": "pending",
+      "priority": "critical",
+      "created": "2025-11-17T17:15:31.757452+00:00",
+      "updated": "2025-11-17T17:15:31.757459+00:00",
+      "completed": null,
+      "source_file": "/Users/coreyyoung/.claude/docs/test-sprint.md",
+      "source_line": 7,
+      "notes": null,
+      "tags": [
+        "ui"
+      ],
+      "blocked_by": null,
+      "depends_on": []
+    },
+    {
+      "id": 2,
+      "title": "Implement /create-tasks parser",
+      "status": "pending",
+      "priority": "high",
+      "created": "2025-11-17T17:15:31.758439+00:00",
+      "updated": "2025-11-17T17:15:31.758444+00:00",
+      "completed": null,
+      "source_file": "/Users/coreyyoung/.claude/docs/test-sprint.md",
+      "source_line": 14,
+      "notes": null,
+      "tags": [],
+      "blocked_by": null,
+      "depends_on": []
+    },
+    {
+      "id": 3,
+      "title": "Create /tasks display command",
+      "status": "pending",
+      "priority": "high",
+      "created": "2025-11-17T17:15:31.759560+00:00",
+      "updated": "2025-11-17T17:15:31.759566+00:00",
+      "completed": null,
+      "source_file": "/Users/coreyyoung/.claude/docs/test-sprint.md",
+      "source_line": 18,
+      "notes": null,
+      "tags": [],
+      "blocked_by": null,
+      "depends_on": []
+    },
+    {
+      "id": 5,
+      "title": "Add /task-update functionality",
+      "status": "pending",
+      "priority": "medium",
+      "created": "2025-11-17T17:15:31.760759+00:00",
+      "updated": "2025-11-17T17:15:31.760764+00:00",
+      "completed": null,
+      "source_file": "/Users/coreyyoung/.claude/docs/test-sprint.md",
+      "source_line": 27,
+      "notes": null,
+      "tags": [],
+      "blocked_by": null,
+      "depends_on": []
+    },
+    {
+      "id": 6,
+      "title": "Implement /task-complete archival",
+      "status": "pending",
+      "priority": "medium",
+      "created": "2025-11-17T17:15:31.761209+00:00",
+      "updated": "2025-11-17T17:15:31.761214+00:00",
+      "completed": null,
+      "source_file": "/Users/coreyyoung/.claude/docs/test-sprint.md",
+      "source_line": 30,
+      "notes": null,
+      "tags": [],
+      "blocked_by": null,
+      "depends_on": []
+    },
+    {
+      "id": 7,
+      "title": "Build /task-sync git integration",
+      "status": "pending",
+      "priority": "medium",
+      "created": "2025-11-17T17:15:31.761656+00:00",
+      "updated": "2025-11-17T17:15:31.761660+00:00",
+      "completed": null,
+      "source_file": "/Users/coreyyoung/.claude/docs/test-sprint.md",
+      "source_line": 33,
+      "notes": null,
+      "tags": [
+        "ui"
+      ],
+      "blocked_by": null,
+      "depends_on": []
+    },
+    {
+      "id": 8,
+      "title": "Write comprehensive documentation",
+      "status": "pending",
+      "priority": "low",
+      "created": "2025-11-17T17:15:31.762401+00:00",
+      "updated": "2025-11-17T17:15:31.762413+00:00",
+      "completed": null,
+      "source_file": "/Users/coreyyoung/.claude/docs/test-sprint.md",
+      "source_line": 39,
+      "notes": null,
+      "tags": [
+        "documentation"
+      ],
+      "blocked_by": null,
+      "depends_on": []
+    },
+    {
+      "id": 9,
+      "title": "Test on Claude Code Web",
+      "status": "pending",
+      "priority": "low",
+      "created": "2025-11-17T17:15:31.762941+00:00",
+      "updated": "2025-11-17T17:15:31.762945+00:00",
+      "completed": null,
+      "source_file": "/Users/coreyyoung/.claude/docs/test-sprint.md",
+      "source_line": 42,
+      "notes": null,
+      "tags": [],
+      "blocked_by": null,
+      "depends_on": []
+    }
+  ]
+}
