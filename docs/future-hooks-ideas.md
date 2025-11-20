@@ -26,13 +26,18 @@
 5. **Stop** → `alex_voice.py`
    - Alex completion voice notifications
 
-6. **SubagentStop** → `subagent_voice.py`
-   - Agent completion voice notifications with routing
+6. **SubagentStart** → `subagent_start.py`
+   - Automatic PAI context injection
 
-7. **PreCompact** → `pre_compact.py`
+7. **SubagentStop** → `subagent_stop.py`
+   - Agent transcript archival
+   - Voice notifications with routing
+   - Future: Quality gates, validation
+
+8. **PreCompact** → `pre_compact.py`
    - Pre-compaction backup and logging
 
-8. **SessionStart** → `auto_restore.sh`
+9. **SessionStart** → `auto_restore.sh`
    - Autopilot state restoration
 
 ---

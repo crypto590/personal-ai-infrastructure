@@ -53,33 +53,37 @@ def is_dangerous_rm_command(command):
 
 def is_env_file_access(tool_name, tool_input):
     """
-    Check if any tool is trying to access .env files containing sensitive data.
+    Check if any tool is trying to modify .env files containing sensitive data.
+    Allows reading .env files but blocks write/modify operations.
     """
     if tool_name in ['Read', 'Edit', 'MultiEdit', 'Write', 'Bash']:
         # Check file paths for file-based tools
-        if tool_name in ['Read', 'Edit', 'MultiEdit', 'Write']:
+        if tool_name in ['Edit', 'MultiEdit', 'Write']:
+            # Block Edit, MultiEdit, and Write operations on .env files
             file_path = tool_input.get('file_path', '')
             if '.env' in file_path and not file_path.endswith('.env.sample'):
                 return True
-        
-        # Check bash commands for .env file access
+
+        # Allow Read tool for .env files (tool_name == 'Read' is NOT blocked)
+
+        # Check bash commands for .env file modifications
         elif tool_name == 'Bash':
             command = tool_input.get('command', '')
-            # Pattern to detect .env file access (but allow .env.sample)
+            # Pattern to detect .env file modifications (but allow read operations like cat)
             env_patterns = [
-                r'\b\.env\b(?!\.sample)',  # .env but not .env.sample
-                r'cat\s+.*\.env\b(?!\.sample)',  # cat .env
                 r'echo\s+.*>\s*\.env\b(?!\.sample)',  # echo > .env
                 r'touch\s+.*\.env\b(?!\.sample)',  # touch .env
-                r'cp\s+.*\.env\b(?!\.sample)',  # cp .env
-                r'mv\s+.*\.env\b(?!\.sample)',  # mv .env
+                r'cp\s+.*\.env\b(?!\.sample)',  # cp to .env
+                r'mv\s+.*\.env\b(?!\.sample)',  # mv to .env
                 r'rm\s+.*\.env\b(?!\.sample)',  # rm .env
+                r'>\s*\.env\b(?!\.sample)',  # redirect to .env
+                r'>>\s*\.env\b(?!\.sample)',  # append to .env
             ]
-            
+
             for pattern in env_patterns:
                 if re.search(pattern, command):
                     return True
-    
+
     return False
 
 def detect_task_creation_intent(input_data):
@@ -126,10 +130,10 @@ def main():
             print("See: ~/.claude/skills/business/task-management/SKILL.md", file=sys.stderr)
             # Don't block, just remind - exit 0 to allow continuation
 
-        # Check for .env file access (blocks access to sensitive environment files)
+        # Check for .env file modifications (blocks write/modify operations on sensitive environment files)
         if is_env_file_access(tool_name, tool_input):
-            print("BLOCKED: Access to .env files containing sensitive data is prohibited", file=sys.stderr)
-            print("Use .env.sample for template files instead", file=sys.stderr)
+            print("BLOCKED: Modifying .env files containing sensitive data is prohibited", file=sys.stderr)
+            print("Reading .env files is allowed. Use .env.sample for template files.", file=sys.stderr)
             sys.exit(2)  # Exit code 2 blocks tool call and shows error to Claude
 
         # Check for dangerous rm -rf commands
