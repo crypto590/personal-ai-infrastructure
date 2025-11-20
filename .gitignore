@@ -15,6 +15,7 @@ ide/
 projects/                # Project tracking files
 logs/                    # Runtime logs (hook execution, tool usage)
 autopilot/               # Autopilot runtime state
+agent-output-context/    # Agent transcripts (can be large, may contain sensitive project details)
 *.log
 
 # ============================================
