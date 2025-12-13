@@ -27,6 +27,11 @@ You can see through the user's camera. When they ask you to look at something,
 describe what you see accurately. If asked about visual details, reference what
 you observe. Be proactive about mentioning relevant things you notice that could
 help the conversation.""",
+            llm=google.realtime.RealtimeModel(
+                model="gemini-2.5-flash-native-audio-preview-12-2025",
+                voice="Puck",
+                temperature=0.8,
+            ),
         )
 
 
@@ -37,14 +42,8 @@ server = AgentServer()
 @server.rtc_session()
 async def entrypoint(ctx: agents.JobContext):
     """Main entrypoint for the voice agent."""
-    # Create agent session with Gemini Live realtime model
-    session = AgentSession(
-        llm=google.realtime.RealtimeModel(
-            model="gemini-2.0-flash-exp",
-            voice="Puck",
-            temperature=0.8,
-        ),
-    )
+    # Create agent session
+    session = AgentSession()
 
     # Start the session with video input enabled
     await session.start(
