@@ -32,6 +32,7 @@ export async function GET(request: Request) {
     canPublish: true,
     canSubscribe: true,
     canPublishData: true,
+    roomRecord: true,
   });
 
   const jwt = await token.toJwt();

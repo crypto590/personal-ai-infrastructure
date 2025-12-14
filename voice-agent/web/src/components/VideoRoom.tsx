@@ -12,6 +12,7 @@ import {
 } from '@livekit/components-react';
 import '@livekit/components-styles';
 import { Track } from 'livekit-client';
+import { RecordButton } from './RecordButton';
 
 function VideoGrid() {
   const tracks = useTracks(
@@ -69,7 +70,10 @@ export function VideoRoom({ token, serverUrl, onDisconnect }: VideoRoomProps) {
     >
       <VideoGrid />
       <RoomAudioRenderer />
-      <ControlBar variation="minimal" />
+      <div className="flex items-center justify-center gap-4 p-4">
+        <ControlBar variation="minimal" />
+        <RecordButton />
+      </div>
     </LiveKitRoom>
   );
 }
