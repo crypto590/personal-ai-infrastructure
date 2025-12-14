@@ -12,10 +12,20 @@ shell-snapshots/
 statsig/
 todos/
 ide/
-projects/                # Project tracking files
-logs/                    # Runtime logs (hook execution, tool usage)
-autopilot/               # Autopilot runtime state
-agent-output-context/    # Agent transcripts (can be large, may contain sensitive project details)
+# Project tracking files
+projects/
+# Runtime logs (hook execution, tool usage)
+logs/
+# Autopilot runtime state
+autopilot/
+# Agent transcripts (can be large, may contain sensitive project details)
+agent-output-context/
+# Temporary test/experiment files
+scratchpad/
+# Planning documents
+plans/
+# Runtime stats cache
+stats-cache.json
 *.log
 
 # ============================================
