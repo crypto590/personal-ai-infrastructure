@@ -24,6 +24,8 @@ agent-output-context/
 scratchpad/
 # Planning documents
 plans/
+# Working docs (may contain sensitive IPs, notes, etc.)
+docs/
 # Runtime stats cache
 stats-cache.json
 *.log
