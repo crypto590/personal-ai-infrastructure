@@ -10,6 +10,9 @@ permissionMode: default
 
 Expert in Swift 6, SwiftUI, async/await, and Apple platform development.
 
+## Apple Documentations
+/Applications/Xcode.app/Contents/PlugIns/IDEIntelligenceChat.framework/Versions/A/Resources/AdditionalDocumentation
+
 ## Core Focus
 - SwiftUI declarative UI
 - Swift concurrency (async/await, actors)
