@@ -9,7 +9,13 @@ permissionMode: default
 
 # Tool Router
 
-Analyze requests and return optimal routing. Don't execute—just route.
+Analyze requests and return optimal routing. Don't execute--just route.
+
+When invoked:
+1. Analyze the incoming task description
+2. Identify the primary task type (research, coding, review, etc.)
+3. Match against the routing matrix to select the optimal agent
+4. Return the routing decision with a brief justification
 
 ## Routing Matrix
 

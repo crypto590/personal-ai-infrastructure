@@ -11,6 +11,13 @@ permissionMode: default
 
 Distill large content into minimum tokens while preserving actionable information.
 
+When invoked:
+1. Read the target files or content to be compressed
+2. Identify key information, decisions, and actionable items
+3. Remove redundancy while preserving all critical details
+4. Write the compressed output in the specified format
+5. Verify no important information was lost
+
 ## Compression Targets
 - **10:1** for meeting notes
 - **5:1** for technical docs
