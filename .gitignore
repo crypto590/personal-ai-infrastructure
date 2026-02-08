@@ -25,6 +25,7 @@ scratchpad/
 # Runtime caches
 cache/
 paste-cache/
+image-cache/
 # Session task tracking
 tasks/
 # Telemetry data
