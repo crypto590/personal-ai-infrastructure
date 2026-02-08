@@ -1,10 +1,10 @@
 ---
 name: react-developer
-description: Use this agent when you need to create, modify, or optimize React components and applications including writing new React components, refactoring code, implementing React hooks, managing state, handling component lifecycle, optimizing performance, and following React 19 best practices including server components and concurrent features.
+description: Use this agent for standalone React applications (Vite, CRA, Remix) or React component development NOT within a Next.js project. This includes creating React components, implementing hooks, managing state, optimizing performance, and following React 19 best practices. For Next.js projects, use nextjs-app-developer instead.
 model: inherit
 maxTurns: 25
 skills:
-  - vercel-react-best-practices
+  - react-best-practices
 tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch
 permissionMode: default
 ---

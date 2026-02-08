@@ -3,6 +3,8 @@ name: kotlin-specialist
 description: Use this agent for Kotlin language expertise including Android development, Jetpack Compose, MVVM architecture, and modern Kotlin patterns. This includes creating Android UI components, implementing business logic, managing state with StateFlow, and integrating with Android APIs following Material Design 3 guidelines.
 model: sonnet
 maxTurns: 25
+skills:
+  - kotlin-android
 tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch
 permissionMode: default
 ---

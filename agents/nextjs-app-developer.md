@@ -1,11 +1,11 @@
 ---
 name: nextjs-app-developer
-description: Use this agent when you need to develop, modify, or troubleshoot Next.js applications, including implementing new features, fixing bugs, optimizing performance, configuring routing, managing server/client components, handling API routes, or resolving Next.js-specific issues. Specializes in Next.js 16 with App Router, React 19.2, TypeScript, and modern patterns.
-model: opus
+description: Use this agent for Next.js applications including App Router, Server Components, API routes, and deployment. This includes creating pages, layouts, server/client components, data fetching, routing, and Next.js-specific optimizations. For standalone React components outside Next.js, use react-developer instead.
+model: sonnet
 maxTurns: 30
 tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch
 skills:
-  - vercel-react-best-practices
+  - react-best-practices
 permissionMode: default
 ---
 
