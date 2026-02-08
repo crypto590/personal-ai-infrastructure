@@ -38,7 +38,7 @@ run_with_timeout() {
 
 # Configuration
 BASE_BRANCH="${1:-main}"
-TIMEOUT_SECONDS=300  # 5 minute timeout per reviewer
+TIMEOUT_SECONDS=600  # 10 minute timeout per reviewer
 OUTPUT_DIR=$(mktemp -d)
 
 # Get project root (where the command is run from)
@@ -148,22 +148,37 @@ Be specific: cite file paths and line numbers. Be concise: focus on real issues,
 GIT DIFF:
 '
 
+# Write prompt + diff to a temp file (shared helper to avoid ARG_MAX limits)
+write_prompt_file() {
+    local prompt_file
+    prompt_file=$(mktemp "$OUTPUT_DIR/prompt-XXXXXX.txt")
+    {
+        printf '%s' "$REVIEW_PROMPT"
+        get_diff
+    } > "$prompt_file"
+    echo "$prompt_file"
+}
+
 # Run Claude review
 run_claude_review() {
     log_info "Starting Claude review..."
-    local diff_content
-    diff_content=$(get_diff)
 
     if command -v claude &>/dev/null; then
-        if run_with_timeout "$TIMEOUT_SECONDS" claude -p "${REVIEW_PROMPT}${diff_content}" \
+        local prompt_file
+        prompt_file=$(write_prompt_file)
+
+        # Pipe prompt+diff via stdin to avoid ARG_MAX limits
+        if run_with_timeout "$TIMEOUT_SECONDS" claude -p \
             --output-format json \
             --allowedTools "Read,Grep,Glob,Bash(git:*)" \
+            < "$prompt_file" \
             > "$OUTPUT_DIR/claude.json" 2>&1; then
             log_success "Claude review complete"
         else
             log_warn "Claude review failed or timed out"
             echo '{"error": "Review failed or timed out"}' > "$OUTPUT_DIR/claude.json"
         fi
+        rm -f "$prompt_file"
     else
         echo '{"error": "claude CLI not installed"}' > "$OUTPUT_DIR/claude.json"
         log_warn "Claude CLI not available"
@@ -173,18 +188,22 @@ run_claude_review() {
 # Run Gemini review
 run_gemini_review() {
     log_info "Starting Gemini review..."
-    local diff_content
-    diff_content=$(get_diff)
 
     if command -v gemini &>/dev/null; then
-        if run_with_timeout "$TIMEOUT_SECONDS" gemini "${REVIEW_PROMPT}${diff_content}" \
-            --output-format json \
+        local prompt_file
+        prompt_file=$(write_prompt_file)
+
+        # Pipe prompt+diff via stdin; gemini reads stdin and -o sets output format
+        if run_with_timeout "$TIMEOUT_SECONDS" gemini \
+            -o json \
+            < "$prompt_file" \
             > "$OUTPUT_DIR/gemini.json" 2>&1; then
             log_success "Gemini review complete"
         else
             log_warn "Gemini review failed or timed out"
             echo '{"error": "Review failed or timed out"}' > "$OUTPUT_DIR/gemini.json"
         fi
+        rm -f "$prompt_file"
     else
         echo '{"error": "gemini CLI not installed"}' > "$OUTPUT_DIR/gemini.json"
         log_warn "Gemini CLI not available"
@@ -196,25 +215,25 @@ run_codex_review() {
     log_info "Starting Codex review..."
 
     if command -v codex &>/dev/null; then
-        # Try the dedicated review command first, fall back to exec
+        # codex review handles the diff itself via --base; no --json flag available
         if run_with_timeout "$TIMEOUT_SECONDS" codex review \
             --base "$BASE_BRANCH" \
-            --json \
             > "$OUTPUT_DIR/codex.json" 2>&1; then
             log_success "Codex review complete"
         else
-            # Fallback to exec if review command doesn't exist
-            local diff_content
-            diff_content=$(get_diff)
-            if run_with_timeout "$TIMEOUT_SECONDS" codex exec "${REVIEW_PROMPT}${diff_content}" \
-                --json \
+            # Fallback: pipe prompt+diff via stdin to codex exec
+            local prompt_file
+            prompt_file=$(write_prompt_file)
+            if run_with_timeout "$TIMEOUT_SECONDS" codex exec \
                 --full-auto \
+                - < "$prompt_file" \
                 > "$OUTPUT_DIR/codex.json" 2>&1; then
                 log_success "Codex review complete (via exec)"
             else
                 log_warn "Codex review failed or timed out"
                 echo '{"error": "Review failed or timed out"}' > "$OUTPUT_DIR/codex.json"
             fi
+            rm -f "$prompt_file"
         fi
     else
         echo '{"error": "codex CLI not installed"}' > "$OUTPUT_DIR/codex.json"
