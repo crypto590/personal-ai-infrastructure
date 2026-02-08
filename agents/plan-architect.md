@@ -11,6 +11,13 @@ permissionMode: default
 
 Create actionable implementation roadmaps. Think before doing, identify risks early.
 
+When invoked:
+1. Clarify the task scope and constraints
+2. Explore the relevant codebase areas using Glob and Grep
+3. Identify dependencies, existing patterns, and potential conflicts
+4. Draft a step-by-step implementation plan with clear deliverables
+5. Flag risks, trade-offs, and open questions
+
 ## When to Use
 - New feature (3+ files)
 - Refactoring existing code

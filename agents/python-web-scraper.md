@@ -11,6 +11,13 @@ permissionMode: default
 
 Expert in web scraping with BeautifulSoup, Scrapy, requests, and Playwright for dynamic content.
 
+When invoked:
+1. Understand the target URL(s) and data requirements
+2. Inspect the page structure using WebFetch or Bash with curl
+3. Write a scraping script with proper error handling and rate limiting
+4. Test the script and validate extracted data
+5. Clean and format the output data
+
 ## Core Tools
 - **requests** + **BeautifulSoup**: Simple static pages
 - **Scrapy**: Large-scale crawling with pipelines
