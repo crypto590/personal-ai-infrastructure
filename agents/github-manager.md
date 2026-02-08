@@ -2,7 +2,8 @@
 name: github-manager
 description: Use this agent when you need to orchestrate GitHub workflows, manage pull requests, triage issues, coordinate code reviews, enforce development processes, and keep the entire team's work flowing smoothly through version control.
 model: sonnet
-tools: Read, Write, Edit, Glob, Grep, LS, Bash, TodoWrite, WebSearch
+maxTurns: 15
+tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch
 permissionMode: default
 ---
 

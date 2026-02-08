@@ -2,7 +2,8 @@
 name: plan-architect
 description: Use this agent to create implementation plans before writing code. Breaks down complex tasks into concrete steps, identifies dependencies, and creates actionable roadmaps. Use when starting any non-trivial feature or refactoring.
 model: sonnet
-tools: Read, Glob, Grep, LS, Write, TodoWrite
+maxTurns: 15
+tools: Read, Glob, Grep, Write
 permissionMode: default
 ---
 

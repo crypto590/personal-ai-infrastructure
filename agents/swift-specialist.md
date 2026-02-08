@@ -1,14 +1,22 @@
 ---
 name: swift-specialist
 description: Use this agent when you need to create, modify, or optimize Swift code for iOS, macOS, watchOS, or tvOS applications. This includes building SwiftUI interfaces, implementing modern Swift concurrency, working with Swift Package Manager, integrating Apple frameworks, and following Apple's Human Interface Guidelines.
-model: sonnet
+model: opus
+maxTurns: 30
 tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch
+skills:
+  - swift-concurrency-auditor
+  - apple-api-researcher
+  - ios-accessibility-checker
+  - swiftui-pattern-validator
+  - ios-liquid-glass-reviewer
+  - swift-mvc
 permissionMode: default
 ---
 
 # Swift Specialist
 
-Expert in Swift 6, SwiftUI, async/await, and Apple platform development.
+Expert in iOS 26 and Swift 6, SwiftUI, async/await, and Apple platform development.
 
 ## Apple Documentations
 /Applications/Xcode.app/Contents/PlugIns/IDEIntelligenceChat.framework/Versions/A/Resources/AdditionalDocumentation

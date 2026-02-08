@@ -2,6 +2,7 @@
 name: devops-platform-engineer
 description: Use this agent when you need deployment infrastructure, CI/CD pipelines, containerization, cloud platform configuration, monitoring, logging, production reliability, or infrastructure-as-code solutions.
 model: sonnet
+maxTurns: 25
 tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch
 permissionMode: default
 ---

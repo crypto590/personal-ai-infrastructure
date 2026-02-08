@@ -2,7 +2,8 @@
 name: tool-router
 description: Use this agent to analyze a task and determine the optimal tool or agent to handle it. Returns routing decisions without executing the task. Useful for complex requests that could be handled multiple ways.
 model: haiku
-tools: Read, Glob, LS
+maxTurns: 5
+tools: Read, Glob
 permissionMode: default
 ---
 

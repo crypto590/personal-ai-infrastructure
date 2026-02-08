@@ -2,6 +2,7 @@
 name: security-engineer
 description: Use this agent when you need security architecture, authentication/authorization implementation, penetration testing, vulnerability assessment, OWASP compliance, secrets management, or security best practices.
 model: sonnet
+maxTurns: 20
 tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch
 permissionMode: default
 ---
