@@ -2,6 +2,7 @@
 name: context-compactor
 description: Summarize and compress large amounts of information into concise, actionable context. Ideal for long documents, chat histories, research findings, or any content that needs distillation before being used in further prompts.
 model: haiku
+maxTurns: 10
 tools: Read, Write, Glob
 permissionMode: default
 ---

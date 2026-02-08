@@ -2,7 +2,8 @@
 name: research-specialist
 description: Use this agent when you need to find technical documentation, research best practices, evaluate technologies, and gather high-quality, vetted information from across the web.
 model: sonnet
-tools: WebSearch, WebFetch, Read, Write, Glob, LS
+maxTurns: 15
+tools: WebSearch, WebFetch, Read, Write, Glob
 permissionMode: default
 ---
 
