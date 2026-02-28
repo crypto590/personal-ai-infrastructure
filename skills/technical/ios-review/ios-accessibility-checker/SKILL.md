@@ -1,6 +1,13 @@
 ---
 name: ios-accessibility-checker
-description: Verify Assistive Access, VoiceOver, contrast compliance, and accessibility settings in iOS code. Checks tap targets, labels, reduce transparency/motion handling.
+description: Verify Assistive Access, VoiceOver, contrast compliance, and accessibility settings in iOS code. Checks tap targets, labels, reduce transparency/motion handling. NOT for Liquid Glass design review (use ios-liquid-glass-reviewer) or architecture patterns (use swiftui-pattern-validator).
+compatibility: "Requires macOS with Xcode and iOS project"
+context: fork
+metadata:
+  author: coreyyoung
+  version: 1.0.0
+  category: technical
+  tags: [ios, accessibility, voiceover, wcag, code-review]
 ---
 
 # iOS Accessibility Checker

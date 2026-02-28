@@ -1,6 +1,12 @@
 ---
 name: kotlin-android
-description: Expert Kotlin and Jetpack Compose development using MVVM architecture, Material Design 3, and modern Android patterns. Enforces strict architectural conventions, unidirectional data flow, and interface-based testing. USE WHEN building Android apps, refactoring to Kotlin/Compose, implementing MVVM, or migrating from other platforms (Swift, React Native).
+description: Expert Kotlin and Jetpack Compose development using MVVM architecture, Material Design 3, and modern Android patterns. Enforces strict architectural conventions, unidirectional data flow, and interface-based testing. USE WHEN building Android apps, refactoring to Kotlin/Compose, implementing MVVM, or migrating from other platforms (Swift, React Native). NOT for iOS/Swift, React/web, or cross-platform Flutter projects.
+compatibility: "Requires Android Studio, Kotlin 2.0+, and Gradle"
+metadata:
+  author: coreyyoung
+  version: 1.0.0
+  category: technical
+  tags: [kotlin, android, jetpack-compose, mvvm, material-design]
 ---
 
 # Kotlin/Android Development

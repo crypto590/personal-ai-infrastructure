@@ -1,6 +1,13 @@
 ---
 name: apple-api-researcher
 description: Research latest Apple APIs using Xcode documentation and official sources. Use when implementing new iOS features to find current best practices and API usage patterns.
+compatibility: "Requires macOS with Xcode installed for documentation access"
+context: fork
+metadata:
+  author: coreyyoung
+  version: 1.0.0
+  category: technical
+  tags: [ios, apple, api-research, xcode, documentation, swift]
 ---
 
 # Apple API Researcher

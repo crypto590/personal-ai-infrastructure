@@ -2,6 +2,11 @@
 name: agent-creator
 description: Meta-skill for creating Claude Code sub-agents with proper skill and context references using PAI architecture
 key_info: "Agents go in ~/Claude/agents/, reference skills via relative paths (../../skills/), auto-discovered via ~/.claude/ symlinks"
+metadata:
+  author: coreyyoung
+  version: 1.0.0
+  category: meta
+  tags: [agent, creation, pai-architecture, scaffolding]
 ---
 
 # Agent Creator Meta-Skill

@@ -1,8 +1,13 @@
 ---
 name: react-best-practices
-description: Vercel's 45 React/Next.js performance optimization rules across 8 categories. USE WHEN writing React components, reviewing code for performance, optimizing bundle size, fixing async waterfalls, or building Chrome extensions with React.
+description: Vercel's 45 React/Next.js performance optimization rules across 8 categories. USE WHEN writing React components, reviewing code for performance, optimizing bundle size, fixing async waterfalls, or building Chrome extensions with React. NOT for Swift/iOS, Kotlin/Android, or backend-only Node.js projects.
 source: https://github.com/vercel-labs/agent-skills
 version: 1.0.0
+metadata:
+  author: vercel-labs
+  version: 1.0.0
+  category: technical
+  tags: [react, nextjs, performance, frontend, optimization, vercel]
 ---
 
 # React Best Practices (Vercel Engineering)

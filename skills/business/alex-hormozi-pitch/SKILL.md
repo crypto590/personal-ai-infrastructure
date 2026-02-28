@@ -1,6 +1,11 @@
 ---
 name: alex-hormozi-pitch
 description: Create irresistible offers and pitches using Alex Hormozi's methodology from $100M Offers. Guides through value equation, guarantee frameworks, pricing psychology, and creating offers "too good not to take" for any product or service.
+metadata:
+  author: coreyyoung
+  version: 1.0.0
+  category: business
+  tags: [pitch, offers, pricing, sales, hormozi]
 ---
 
 # Alex Hormozi Pitch Skill
@@ -59,6 +64,22 @@ Value = (Dream Outcome × Perceived Likelihood) / (Time Delay × Effort & Sacrif
 - High-ticket sales
 - Lead magnets
 - Upsells and downsells
+
+## Iterative Refinement Loop
+
+After generating the initial pitch, evaluate and iterate:
+
+1. **Generate** initial pitch using frameworks above
+2. **Evaluate** against quality criteria:
+   - Value Equation score: Does each component maximize value?
+   - Guarantee strength: Is it bold enough to reduce perceived risk to zero?
+   - Specificity: Are outcomes concrete with numbers, not vague promises?
+   - Objection coverage: Does the offer preemptively handle top 3 objections?
+   - Scarcity/urgency: Is there a real reason to act now?
+3. **Iterate** on weakest scoring area - improve one dimension per pass
+4. **Stop when** all criteria pass OR 3 refinement cycles complete (diminishing returns)
+
+Present the user with the evaluation scores after each pass so they can guide further refinement.
 
 ## Full Workflow Reference
 

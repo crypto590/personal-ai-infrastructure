@@ -1,9 +1,15 @@
 ---
 name: ios-check
-description: Run iOS code quality checks (SwiftLint, build, tests, coverage)
+description: Run iOS code quality checks (SwiftLint, build, tests, coverage). NOT for code review, architecture validation, or accessibility audits - use ios-review skills for those.
 argument-hint: "[--test] [--coverage] [--fix] [path]"
 disable-model-invocation: true
 allowed-tools: Bash, Read, Write, Glob, mcp__xcodebuildmcp__test_sim, mcp__xcodebuildmcp__build_sim
+compatibility: "Requires macOS with Xcode, SwiftLint, and xcodebuild MCP server"
+metadata:
+  author: coreyyoung
+  version: 1.0.0
+  category: technical
+  tags: [ios, swiftlint, code-quality, testing, coverage, xcode]
 ---
 
 # iOS Code Quality Check

@@ -2,6 +2,14 @@
 name: forget
 description: Remove something from project memory. Use /forget <what> to remove items or /forget all to clear everything.
 argument-hint: "<what to forget | all>"
+disable-model-invocation: true
+allowed-tools: Bash(python:*), Read, Write, Glob
+compatibility: "Requires Python 3.10+ for hashlib-based project hashing"
+metadata:
+  author: coreyyoung
+  version: 1.0.0
+  category: memory
+  tags: [memory, persistence, cleanup, destructive]
 ---
 
 # Forget Command

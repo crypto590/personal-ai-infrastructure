@@ -1,6 +1,12 @@
 ---
 name: swift-mvc
-description: Modern MVC architecture for Swift/SwiftUI with strict unidirectional data flow. Observable Controllers coordinate Services and manage UI state, Services handle async operations, Models contain business logic, Views delegate to Controllers.
+description: Modern MVC architecture for Swift/SwiftUI with strict unidirectional data flow. Observable Controllers coordinate Services and manage UI state, Services handle async operations, Models contain business logic, Views delegate to Controllers. NOT for Android/Kotlin, MVVM patterns, or React projects.
+compatibility: "Requires macOS with Xcode 16+ and Swift 6.0+"
+metadata:
+  author: coreyyoung
+  version: 1.0.0
+  category: technical
+  tags: [swift, swiftui, mvc, architecture, observable, services]
 ---
 
 # Swift MVC Architecture

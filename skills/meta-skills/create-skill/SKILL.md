@@ -1,6 +1,11 @@
 ---
 name: create-skill
 description: Guide for creating new skills in Alex's personal AI infrastructure. Use when user wants to create, update, or structure a new skill that extends capabilities with specialized knowledge, workflows, or tool integrations. Follows both Anthropic skill standards and PAI-specific patterns.
+metadata:
+  author: coreyyoung
+  version: 1.0.0
+  category: meta
+  tags: [skill, creation, pai-architecture, scaffolding, templates]
 ---
 
 # Create Skill - Skill Creation Framework
@@ -86,12 +91,35 @@ Include:
 - Integration instructions
 - Troubleshooting guides
 
-### Step 6: Test the Skill
+### Step 6: Validate the Skill
 
-1. Trigger it with natural language
-2. Verify it loads correctly
-3. Check all references work
-4. Validate against examples
+Run the validation script to check for common issues:
+```bash
+uv run ~/.claude/skills/meta-skills/create-skill/scripts/validate_skill.py <path-to-SKILL.md>
+```
+
+Or validate all skills at once:
+```bash
+uv run ~/.claude/skills/meta-skills/create-skill/scripts/validate_skill.py --all ~/.claude/skills
+```
+
+The validator checks:
+- YAML frontmatter format and required fields (name, description)
+- Naming conventions (kebab-case, folder match)
+- Description length and content rules
+- Metadata completeness (author, version, category, tags)
+- Body word count (<5000 recommended)
+- References/ usage for large skills
+
+### Step 7: Test the Skill
+
+Test three dimensions (see `references/skill-testing-guide.md` for full framework):
+
+1. **Triggering tests** - Does it load on 10+ relevant queries? Does it stay dormant on unrelated ones?
+2. **Functional tests** - Given/When/Then assertions for happy path, error cases, and edge cases
+3. **Performance comparison** - Compare message count, token usage, and consistency with vs. without the skill
+
+Quick test: Ask Claude "When would you use [skill-name]?" to check description quality.
 
 ## Skill Naming Conventions
 

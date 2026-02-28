@@ -2,6 +2,13 @@
 name: remember
 description: Add something to project memory for future sessions. Use /remember <what> to save decisions, focus areas, or open items.
 argument-hint: "<what to remember>"
+allowed-tools: Bash(python:*), Read, Write, Glob
+compatibility: "Requires Python 3.10+ for hashlib-based project hashing"
+metadata:
+  author: coreyyoung
+  version: 1.0.0
+  category: memory
+  tags: [memory, persistence, project-state, obsidian-sync]
 ---
 
 # Remember Command

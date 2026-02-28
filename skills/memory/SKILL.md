@@ -1,6 +1,13 @@
 ---
 name: memory
 description: View current project memory - what Alex remembers about this project across sessions.
+allowed-tools: Bash(python:*), Read, Glob
+compatibility: "Requires Python 3.10+ for hashlib-based project hashing"
+metadata:
+  author: coreyyoung
+  version: 1.0.0
+  category: memory
+  tags: [memory, persistence, project-state, read-only]
 ---
 
 # Memory Command

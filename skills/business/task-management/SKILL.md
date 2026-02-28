@@ -15,6 +15,13 @@ description: |
   REQUIRED ACTION: Read this SKILL.md completely, then ONLY use task_manager.py script.
   Using TodoWrite for task creation = SYSTEM FAILURE.
 key_info: "PERSISTENT task creation uses task_manager.py ONLY. Commands: create <file>, list [filter], update <id> <field> <value>, complete <id>"
+allowed-tools: Bash(uv:*), Read, Write, Glob, Grep
+compatibility: "Requires Python 3.10+ and uv package manager"
+metadata:
+  author: coreyyoung
+  version: 1.0.0
+  category: business
+  tags: [tasks, project-management, sprint-planning, persistent, git-synced]
 ---
 
 # Task Management - Project-Local Task Tracking

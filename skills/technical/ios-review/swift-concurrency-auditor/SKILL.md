@@ -1,6 +1,13 @@
 ---
 name: swift-concurrency-auditor
-description: Audit Swift async/await patterns for Swift 6.2 compliance. Checks actor isolation, @concurrent usage, race conditions, Task cancellation, and Sendable conformance.
+description: Audit Swift async/await patterns for Swift 6.2 compliance. Checks actor isolation, @concurrent usage, race conditions, Task cancellation, and Sendable conformance. NOT for UI layout review, accessibility audits, or architecture validation.
+compatibility: "Requires macOS with Xcode 16+ and Swift 6.2+"
+context: fork
+metadata:
+  author: coreyyoung
+  version: 1.0.0
+  category: technical
+  tags: [swift, concurrency, async-await, actors, sendable, code-review]
 ---
 
 # Swift Concurrency Auditor

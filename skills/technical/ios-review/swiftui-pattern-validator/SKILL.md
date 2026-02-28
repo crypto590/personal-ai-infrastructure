@@ -1,6 +1,13 @@
 ---
 name: swiftui-pattern-validator
-description: Validate MVC architecture compliance in SwiftUI code. Checks Controller patterns, service protocols, task cancellation, and proper layer separation per swift-conventions.md.
+description: Validate MVC architecture compliance in SwiftUI code. Checks Controller patterns, service protocols, task cancellation, and proper layer separation per swift-conventions.md. NOT for concurrency audits (use swift-concurrency-auditor), accessibility (use ios-accessibility-checker), or Liquid Glass (use ios-liquid-glass-reviewer).
+compatibility: "Requires macOS with Xcode and SwiftUI project"
+context: fork
+metadata:
+  author: coreyyoung
+  version: 1.0.0
+  category: technical
+  tags: [swiftui, mvc, architecture, pattern-validation, code-review]
 ---
 
 # SwiftUI Pattern Validator

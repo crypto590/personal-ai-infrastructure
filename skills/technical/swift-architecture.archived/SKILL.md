@@ -1,6 +1,11 @@
 ---
 name: swift-architecture
-description: Progressive architecture for Swift/SwiftUI apps that scales with complexity. Start simple with @State, add ViewModels for logic, extract Services when shared. Follows modern SwiftUI patterns and SOLID principles.
+description: "[ARCHIVED - use swift-mvc instead] Progressive architecture for Swift/SwiftUI apps that scales with complexity. Start simple with @State, add ViewModels for logic, extract Services when shared. NOT for new projects - superseded by swift-mvc skill."
+metadata:
+  author: coreyyoung
+  version: 1.0.0
+  category: technical
+  tags: [swift, swiftui, architecture, progressive, solid, archived]
 ---
 
 # Swift Architecture

@@ -1,6 +1,13 @@
 ---
 name: ios-liquid-glass-reviewer
-description: Review SwiftUI code for Liquid Glass compliance. Checks single glass layer, contrast, performance, accessibility, and design system adherence.
+description: Review SwiftUI code for Liquid Glass compliance. Checks single glass layer, contrast, performance, accessibility, and design system adherence. NOT for general accessibility audits (use ios-accessibility-checker) or architecture validation (use swiftui-pattern-validator).
+compatibility: "Requires macOS with Xcode and SwiftUI project"
+context: fork
+metadata:
+  author: coreyyoung
+  version: 1.0.0
+  category: technical
+  tags: [ios, swiftui, liquid-glass, design-system, code-review]
 ---
 
 # iOS Liquid Glass Reviewer
