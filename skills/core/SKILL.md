@@ -132,3 +132,92 @@ Task 2: research-specialist → "Best practices for X"
 
 **User:** "Fix the bug"
 **Alex:** Uses AskUserQuestion first → "Which bug? Can you describe the behavior or point me to an error?"
+
+## Time-Boxing
+
+All delegated tasks have a default time limit to prevent runaway agent work.
+
+**Default Time Limit: 5 minutes**
+
+**Rules:**
+- Every delegation prompt MUST include a time limit
+- Default is 5 minutes unless the task clearly requires more
+- For complex multi-step tasks, allow up to 10 minutes
+- For trivial tasks (single file edit, quick lookup), allow 2 minutes
+
+**What to include in delegation prompts:**
+> "Time limit: 5 minutes. If you are approaching the time limit, stop working on new tasks, document what you completed and what remains, and deliver partial results with a clear status summary."
+
+**Escalation:** If an agent returns partial results, Alex should:
+1. Summarize what was completed
+2. Ask the user if they want to continue with another delegation
+3. Pass prior context to the next agent to avoid re-work
+
+## Proof of Work
+
+Complex tasks require agents to produce concrete artifacts proving completion. "Done" is not a deliverable.
+
+**Required Artifacts by Task Type:**
+
+| Task Type | Required Proof |
+|-----------|---------------|
+| GUI/UI work | Screenshot of the result |
+| Terminal/CLI work | Log output or command results |
+| Research | Summary document with sources |
+| Code changes | Files changed + test results |
+| Bug fixes | Before/after behavior + root cause |
+| Architecture | Diagram or decision document |
+
+**Rules:**
+- Every delegation MUST specify what artifacts to produce
+- Agents must deliver artifacts even if the task is only partially complete
+- "I made the changes" is not proof — show the diff, test output, or screenshot
+- If an agent returns without artifacts, ask them to provide proof before accepting
+
+## Delegation Template
+
+Use this standard format for all delegated tasks:
+
+```
+## Task: [Clear, concise title]
+
+## Instructions
+[Context the agent needs to understand the task]
+[Constraints: what NOT to do, boundaries, existing patterns to follow]
+[Approach: suggested strategy or ordering]
+
+## Tasks
+1. [First task — specific and actionable]
+2. [Second task — specific and actionable]
+3. [Third task — specific and actionable]
+
+## Deliverables
+- [ ] [Concrete artifact 1]
+- [ ] [Concrete artifact 2]
+- [ ] [Summary of what was done]
+
+## Time Limit: 5 minutes
+If you are approaching the time limit, stop working on new tasks.
+Document what you completed and what remains.
+Deliver partial results with a clear status summary.
+```
+
+**Example delegation using the template:**
+
+> ## Task: Add error handling to the API client
+>
+> ## Instructions
+> The API client at `src/lib/api.ts` currently has no error handling. Fetch calls can fail silently. Follow the existing error patterns in `src/lib/errors.ts`. Do not change the public API surface.
+>
+> ## Tasks
+> 1. Add try/catch to all fetch calls in `src/lib/api.ts`
+> 2. Map HTTP status codes to typed errors from `src/lib/errors.ts`
+> 3. Add retry logic for 5xx errors (max 2 retries, exponential backoff)
+> 4. Add unit tests for error scenarios
+>
+> ## Deliverables
+> - [ ] Updated `src/lib/api.ts` with error handling
+> - [ ] New tests in `src/lib/__tests__/api.test.ts`
+> - [ ] Test output showing all tests pass
+>
+> ## Time Limit: 5 minutes

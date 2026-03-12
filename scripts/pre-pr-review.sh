@@ -168,11 +168,11 @@ run_claude_review() {
         prompt_file=$(write_prompt_file)
 
         # Pipe prompt+diff via stdin to avoid ARG_MAX limits
-        if run_with_timeout "$TIMEOUT_SECONDS" claude -p \
+        if run_with_timeout "$TIMEOUT_SECONDS" env -u CLAUDECODE claude -p \
             --output-format json \
             --allowedTools "Read,Grep,Glob,Bash(git:*)" \
             < "$prompt_file" \
-            > "$OUTPUT_DIR/claude.json" 2>&1; then
+            > "$OUTPUT_DIR/claude.json" 2>/dev/null; then
             log_success "Claude review complete"
         else
             log_warn "Claude review failed or timed out"
@@ -197,7 +197,7 @@ run_gemini_review() {
         if run_with_timeout "$TIMEOUT_SECONDS" gemini \
             -o json \
             < "$prompt_file" \
-            > "$OUTPUT_DIR/gemini.json" 2>&1; then
+            > "$OUTPUT_DIR/gemini.json" 2>/dev/null; then
             log_success "Gemini review complete"
         else
             log_warn "Gemini review failed or timed out"
@@ -224,10 +224,10 @@ run_codex_review() {
             # Fallback: pipe prompt+diff via stdin to codex exec
             local prompt_file
             prompt_file=$(write_prompt_file)
-            if run_with_timeout "$TIMEOUT_SECONDS" codex exec \
+            if run_with_timeout "$TIMEOUT_SECONDS" env -u CLAUDECODE codex exec \
                 --full-auto \
                 - < "$prompt_file" \
-                > "$OUTPUT_DIR/codex.json" 2>&1; then
+                > "$OUTPUT_DIR/codex.json" 2>/dev/null; then
                 log_success "Codex review complete (via exec)"
             else
                 log_warn "Codex review failed or timed out"
@@ -267,9 +267,8 @@ extract_review() {
             content=$(jq -r '.result // empty' "$file" 2>/dev/null)
             ;;
         "Gemini")
-            # Gemini: JSON with .response field, but has stderr noise at the start
-            # Extract JSON block from first { to last }
-            content=$(sed -n '/^{$/,/^}$/p' "$file" | jq -r '.response // empty' 2>/dev/null)
+            # Gemini: JSON with .response field
+            content=$(jq -r '.response // empty' "$file" 2>/dev/null)
             ;;
         "Codex")
             # Codex: NDJSON format - get the LAST agent_message (the final response)
