@@ -39,11 +39,28 @@ stats-cache.json
 *.log
 
 # ============================================
+# Runtime Data (ephemeral, not for version control)
+# ============================================
+usage-data/
+teams/
+agent-memory/
+backups/
+
+# ============================================
 # Plugins (Managed by Claude Code)
 # ============================================
 # Plugins are external packages that can be reinstalled
 # Don't backup to avoid nested git repo issues
 plugins/
+
+# ============================================
+# Build Artifacts & Virtual Environments
+# ============================================
+.venv/
+.build/
+__pycache__/
+*.pyc
+uv.lock
 
 # ============================================
 # macOS

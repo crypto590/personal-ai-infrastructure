@@ -1,13 +1,8 @@
 # Swift to Kotlin/Android Migration Workflow
 
-**Purpose:** Generic patterns and strategies for migrating iOS apps (Swift/SwiftUI) to Android (Kotlin/Compose).
+**Part of:** [ios-swift](../SKILL.md) > Workflows
 
-## When to Use This Workflow
-
-- Migrating complete iOS app to Android
-- Porting specific features from Swift to Kotlin
-- Creating Android equivalent of iOS app
-- Understanding platform differences during migration
+**Trigger:** Migrating complete iOS app to Android, porting specific features from Swift to Kotlin, creating Android equivalent of iOS app, understanding platform differences during migration.
 
 ---
 
@@ -15,7 +10,7 @@
 
 ### Phase 1: Architecture Mapping
 
-**Swift MVVM → Kotlin MVVM**
+**Swift MVVM -> Kotlin MVVM**
 
 Both platforms use MVVM, but with different implementations:
 
@@ -29,7 +24,7 @@ Both platforms use MVVM, but with different implementations:
 
 ### Phase 2: UI Layer Translation
 
-**SwiftUI → Jetpack Compose**
+**SwiftUI -> Jetpack Compose**
 
 | SwiftUI | Jetpack Compose |
 |---------|-----------------|
@@ -49,7 +44,7 @@ Both platforms use MVVM, but with different implementations:
 
 ### Phase 3: Data Layer Translation
 
-**Swift Data Models → Kotlin Data Classes**
+**Swift Data Models -> Kotlin Data Classes**
 
 **Before (Swift):**
 ```swift
@@ -78,7 +73,7 @@ data class User(
 
 ### Phase 4: Repository Layer
 
-**Swift Protocols → Kotlin Interfaces**
+**Swift Protocols -> Kotlin Interfaces**
 
 **Before (Swift):**
 ```swift
@@ -115,12 +110,12 @@ class UserRepositoryImpl(
 
 **Key Differences:**
 - Swift uses `throws`, Kotlin uses `Result<T>` pattern
-- Swift `async` → Kotlin `suspend`
+- Swift `async` -> Kotlin `suspend`
 - Kotlin requires explicit error handling
 
 ### Phase 5: ViewModel Layer
 
-**Swift Observable → Kotlin ViewModel**
+**Swift Observable -> Kotlin ViewModel**
 
 **Before (Swift):**
 ```swift
@@ -187,7 +182,7 @@ sealed interface UserUiState {
 
 ### Phase 6: View Layer
 
-**SwiftUI View → Composable**
+**SwiftUI View -> Composable**
 
 **Before (Swift):**
 ```swift
@@ -253,7 +248,7 @@ fun UserScreen(
 
 ## Language Syntax Mapping
 
-### Common Swift → Kotlin Patterns
+### Common Swift -> Kotlin Patterns
 
 | Swift | Kotlin |
 |-------|--------|
@@ -423,7 +418,7 @@ MaterialTheme(
 ### Pre-Migration
 
 - [ ] Audit iOS codebase architecture
-- [ ] Identify platform-specific features (e.g., HealthKit → Health Connect)
+- [ ] Identify platform-specific features (e.g., HealthKit -> Health Connect)
 - [ ] List all third-party dependencies
 - [ ] Document API integrations
 - [ ] Map iOS features to Android equivalents
@@ -432,11 +427,11 @@ MaterialTheme(
 
 - [ ] Set up Android project structure
 - [ ] Implement MVVM with Kotlin conventions
-- [ ] Migrate data models (Swift structs → Kotlin data classes)
-- [ ] Convert repositories (protocols → interfaces)
-- [ ] Translate ViewModels (Observable → ViewModel + StateFlow)
-- [ ] Rebuild UI (SwiftUI → Jetpack Compose)
-- [ ] Implement navigation (NavigationStack → type-safe NavHost with @Serializable routes)
+- [ ] Migrate data models (Swift structs -> Kotlin data classes)
+- [ ] Convert repositories (protocols -> interfaces)
+- [ ] Translate ViewModels (Observable -> ViewModel + StateFlow)
+- [ ] Rebuild UI (SwiftUI -> Jetpack Compose)
+- [ ] Implement navigation (NavigationStack -> type-safe NavHost with @Serializable routes)
 - [ ] Set up dependency injection (Hilt/Koin)
 - [ ] Apply Material 3 theming
 
@@ -517,21 +512,6 @@ MaterialTheme(
 | Sign in with Apple | Google Sign-In / Firebase Auth |
 | SwiftData | Room Database |
 | PhotosPicker | Photo Picker (Jetpack) |
-
----
-
-## Reference Resources
-
-**Kotlin Conventions:**
-`read /Users/coreyyoung/Claude/context/knowledge/languages/kotlin-conventions.md`
-
-**Compose Documentation:**
-- https://developer.android.com/jetpack/compose
-- https://developer.android.com/jetpack/compose/mental-model
-
-**Migration Guides:**
-- https://developer.android.com/jetpack/compose/interop/adding
-- https://kotlinlang.org/docs/home.html
 
 ---
 
@@ -646,4 +626,4 @@ fun UserScreen(viewModel: UserViewModel = viewModel()) {
 
 ---
 
-This workflow is generic and reusable across any Swift → Kotlin migration project.
+This workflow is generic and reusable across any Swift -> Kotlin migration project.

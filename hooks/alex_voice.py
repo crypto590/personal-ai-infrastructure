@@ -34,7 +34,7 @@ def log(message: str, level: str = "INFO"):
         f.write(log_entry)
 
 def extract_custom_completed(text: str) -> str:
-    """Extract 🗣️ CUSTOM COMPLETED message from response"""
+    """Extract 🗣️ CUSTOM COMPLETED message from response, or generate a smart summary"""
 
     # Pattern 1: Look for 🗣️ CUSTOM COMPLETED: message
     pattern1 = r'🗣️\s*CUSTOM COMPLETED[:\s]+(.+?)(?:\n|$)'
@@ -60,8 +60,83 @@ def extract_custom_completed(text: str) -> str:
         log(f"Found plain CUSTOM COMPLETED: {msg[:50]}...", "DEBUG")
         return clean_message(msg)
 
-    log("No completion message found, using default", "WARN")
-    return "Task completed"
+    # No marker found - try smart conversational summary
+    log("No completion marker found, attempting smart summary", "DEBUG")
+    summary = extract_smart_summary(text)
+    if summary:
+        log(f"Using smart summary: {summary}", "INFO")
+        return summary
+
+    log("No suitable summary found, skipping voice", "WARN")
+    return ""
+
+
+def extract_smart_summary(text: str) -> str:
+    """Extract a natural conversational summary from response text.
+
+    Returns empty string if the response shouldn't be spoken.
+    """
+    if not text or len(text.strip()) < 20:
+        return ""
+
+    # Split into lines and filter out noise
+    lines = text.strip().split('\n')
+    candidate_lines = []
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        # Skip markdown headers
+        if stripped.startswith('#'):
+            continue
+        # Skip lines that are just formatting/separators
+        if re.match(r'^[-=*_]{3,}$', stripped):
+            continue
+        # Skip lines that are just code fence markers
+        if stripped.startswith('```'):
+            continue
+        # Skip lines that look like file paths or tool output
+        if re.match(r'^(/|\.\.?/|\w+/)', stripped) and '/' in stripped and ' ' not in stripped:
+            continue
+        # Skip bullet-only lines that are just list markers
+        if re.match(r'^[-*+]\s*$', stripped):
+            continue
+        candidate_lines.append(stripped)
+
+    if not candidate_lines:
+        return ""
+
+    # Take the first meaningful line
+    first_line = candidate_lines[0]
+
+    # Skip if it's a question - let the user read those
+    if '?' in first_line and not first_line.startswith(('I ', 'The ', 'This ', 'That ', 'All ')):
+        return ""
+
+    # Skip if it looks like pure code
+    if re.match(r'^(import |from |def |class |func |const |let |var |return |\{|\[)', first_line):
+        return ""
+
+    # Clean markdown formatting
+    cleaned = re.sub(r'[*_`#]+', '', first_line)
+    # Remove markdown links but keep text: [text](url) -> text
+    cleaned = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', cleaned)
+    # Remove bullet/list markers at start
+    cleaned = re.sub(r'^[-*+]\s+', '', cleaned)
+    # Remove numbered list markers
+    cleaned = re.sub(r'^\d+\.\s+', '', cleaned)
+    # Clean extra whitespace
+    cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+
+    if not cleaned or len(cleaned) < 10:
+        return ""
+
+    # Truncate to ~15 words for natural speech
+    words = cleaned.split()
+    if len(words) > 15:
+        cleaned = ' '.join(words[:15])
+
+    return cleaned
 
 def clean_message(message: str) -> str:
     """Clean up extracted message for voice"""
@@ -117,36 +192,36 @@ def main():
         # Stop event includes the full response content
         response_text = ""
 
-        # Try different possible JSON structures
+        # Extract response text from Stop event data
         if isinstance(data, dict):
-            # Check for 'content' field
-            if 'content' in data:
+            # The Stop event uses 'last_assistant_message' for the response text
+            if 'last_assistant_message' in data:
+                response_text = data['last_assistant_message']
+            elif 'content' in data:
                 content = data['content']
                 if isinstance(content, str):
                     response_text = content
                 elif isinstance(content, list):
-                    # Content might be array of message blocks
                     for block in content:
                         if isinstance(block, dict) and 'text' in block:
                             response_text += block['text'] + '\n'
-
-            # Check for 'text' field directly
             elif 'text' in data:
                 response_text = data['text']
-
-            # Check for 'message' field
             elif 'message' in data:
                 response_text = data['message']
 
         if not response_text:
             log("No response text found in Stop event data", "WARN")
             log(f"Event data keys: {list(data.keys()) if isinstance(data, dict) else 'not a dict'}", "DEBUG")
-            # Still send default notification
-            send_notification("Response completed")
             return
 
-        # Extract custom completed message
+        # Extract custom completed message or smart summary
         message = extract_custom_completed(response_text)
+
+        # Skip voice if no suitable message (empty string means don't speak)
+        if not message:
+            log("No voice message to send, skipping", "INFO")
+            return
 
         # Send notification
         send_notification(message)
