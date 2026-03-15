@@ -43,6 +43,16 @@ struct User: Codable, Equatable {
 
 ---
 
+## File Organization
+
+- **Group by cohesion, not by count.** Related types that always travel together can share a file (e.g., `PipelineModels.swift` for `PipelineAthlete`, `PipelineStage`, `PipelineSummary`).
+- A single substantial type gets its own file: `ClubRosterEntry` → `ClubRosterEntry.swift`
+- Avoid grab-bag model files — if the types are unrelated, split them into separate files.
+- **Test:** if you change one type, do you always change the others? If yes, they belong together. If no, separate files.
+- Place models in the same subdomain folder as the controller and service that use them (flat, not nested MVC subfolders).
+
+---
+
 ## Rules
 
 ### Always

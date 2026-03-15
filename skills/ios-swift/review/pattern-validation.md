@@ -309,7 +309,40 @@ LAYER SEPARATION: [PASS/FAIL]
 - Model with dependencies: [none/count - violations]
 ```
 
-### 7. Navigation Pattern
+### 7. Destructive Action Confirmation
+
+**Check:** Destructive actions use `confirmationDialog` (not `alert`). Action sheets are harder to accidentally confirm and are the HIG-correct pattern for destructive operations.
+
+```swift
+// BAD - Alert for destructive action (too easy to accidentally confirm)
+.alert("Delete?", isPresented: $showDelete) {
+    Button("Delete", role: .destructive) { delete() }
+}
+
+// GOOD - Confirmation dialog for destructive action
+.confirmationDialog("Delete?", isPresented: $showDelete, titleVisibility: .visible) {
+    Button("Delete", role: .destructive) { delete() }
+}
+```
+
+**Validation points:**
+| Check | Required | Status |
+|-------|----------|--------|
+| Destructive actions use `confirmationDialog` | Yes | ? |
+| `titleVisibility: .visible` when title is informative | Recommended | ? |
+| Destructive button has `role: .destructive` | Yes | ? |
+
+**Report format:**
+```
+DESTRUCTIVE ACTIONS: [PASS/WARN]
+- Destructive operations: [count]
+- Using confirmationDialog: [count]
+- Using alert (should migrate): [list]
+```
+
+> Inspired by Paul Hudson's SwiftUI-Pro skill
+
+### 8. Navigation Pattern
 
 **Required pattern:**
 ```swift
@@ -355,7 +388,7 @@ struct FeatureView: View {
 | View owns NavigationPath | Yes | ? |
 | Controller never mutates path | Yes | ? |
 
-### 8. View Property Ordering
+### 9. View Property Ordering
 
 **Required order within any `View` struct:**
 
@@ -441,6 +474,73 @@ VIEW ORDERING: [ViewName]
 - Overall: [PASS/FAIL]
 ```
 
+### 10. Swift Language Pitfalls
+
+**Check:** Common Swift/SwiftUI language-level mistakes that cause subtle bugs or missed optimizations.
+
+**`@AppStorage` inside `@Observable` = silent bug (CRITICAL):**
+
+`@AppStorage` does not trigger view updates when used inside an `@Observable` class. The value changes in UserDefaults but the UI never refreshes.
+
+```swift
+// BAD - Silent bug: views won't update when value changes
+@Observable
+final class SettingsController {
+    @AppStorage("theme") var theme = "light"  // BROKEN
+}
+
+// GOOD - Read @AppStorage in the View, pass to Controller
+struct SettingsView: View {
+    @AppStorage("theme") private var theme = "light"
+    @State private var controller = SettingsController()
+
+    var body: some View {
+        Picker("Theme", selection: $theme) { ... }
+    }
+}
+```
+
+**Prefer modern Swift idioms:**
+
+```swift
+// BAD - Inefficient: creates intermediate array
+let activeCount = users.filter { $0.isActive }.count
+
+// GOOD - Single pass, no allocation
+let activeCount = users.count(where: \.isActive)
+
+
+// BAD - Unnecessary initialization
+let now = Date()
+
+// GOOD - Clearer intent
+let now = Date.now
+
+
+// BAD - Case-sensitive, no locale awareness
+let matches = names.filter { $0.contains(query) }
+
+// GOOD - Locale-aware, diacritic-insensitive
+let matches = names.filter { $0.localizedStandardContains(query) }
+
+
+// BAD - Verbose
+Text("Title").fontWeight(.bold)
+
+// GOOD - Concise
+Text("Title").bold()
+```
+
+**Validation points:**
+| Check | Severity | Status |
+|-------|----------|--------|
+| `@AppStorage` inside `@Observable` | Critical | ? |
+| `filter().count` instead of `count(where:)` | Info | ? |
+| `Date()` instead of `Date.now` | Info | ? |
+| Raw `contains()` for user-facing search | Warning | ? |
+
+> Inspired by Paul Hudson's SwiftUI-Pro skill
+
 ---
 
 ## Validation Output Format
@@ -496,9 +596,9 @@ VIEW ORDERING: [ViewName]
 
 | Level | Criteria | Action |
 |-------|----------|--------|
-| Critical | Missing @MainActor on Controller, View calls Service, missing task cancellation | Block PR |
-| Warning | Missing protocol on Service, class instead of struct for Model | Address before shipping |
-| Info | Missing @State on Controller var, could use defer | Optional improvement |
+| Critical | Missing @MainActor on Controller, View calls Service, missing task cancellation, `@AppStorage` inside `@Observable` | Block PR |
+| Warning | Missing protocol on Service, class instead of struct for Model, `alert` for destructive action instead of `confirmationDialog`, raw `contains()` for user-facing search | Address before shipping |
+| Info | Missing @State on Controller var, could use defer, `filter().count` over `count(where:)`, `Date()` over `Date.now` | Optional improvement |
 
 ---
 

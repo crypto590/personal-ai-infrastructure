@@ -55,6 +55,15 @@ Button("Tap") { }
 Button("X") { }
     .frame(width: 24, height: 24)  // VIOLATION
 
+// BAD - Text-only plain button (especially prone to violation)
+Button("Edit") { edit() }
+    .buttonStyle(.plain)  // No default padding/chrome, tap target may be tiny
+
+// GOOD - Plain button with explicit tap target
+Button("Edit") { edit() }
+    .buttonStyle(.plain)
+    .frame(minWidth: 44, minHeight: 44)
+
 // Pattern for small visual elements
 Image(systemName: "info.circle")
     .frame(width: 20, height: 20)  // Visual size
@@ -67,6 +76,7 @@ Image(systemName: "info.circle")
 TAP TARGETS: [PASS/FAIL]
 - Interactive elements: [count]
 - Below 44pt minimum: [list with sizes]
+- Plain-style buttons without explicit frame: [list]
 - Recommendation: Use contentShape for larger hit area
 ```
 
@@ -236,6 +246,247 @@ ACCESSIBLE ACTIONS: [PASS/WARN]
 - Missing alternatives: [list]
 ```
 
+### 9. VoiceOver Grouping
+
+**Check:** Related elements grouped to avoid VoiceOver reading each child individually.
+
+```swift
+// BAD - VoiceOver reads icon and text as separate elements
+HStack {
+    Image(systemName: "clock")
+    Text("5 min ago")
+}
+
+// GOOD - Combined into single VoiceOver element
+HStack {
+    Image(systemName: "clock")
+    Text("5 min ago")
+}
+.accessibilityElement(children: .combine)
+
+// GOOD - Custom label when .combine doesn't produce good output
+HStack {
+    Image(systemName: "star.fill")
+    Image(systemName: "star.fill")
+    Image(systemName: "star.fill")
+    Image(systemName: "star")
+    Image(systemName: "star")
+}
+.accessibilityElement(children: .ignore)
+.accessibilityLabel("3 out of 5 stars")
+```
+
+**Report format:**
+```
+VOICEOVER GROUPING: [PASS/WARN]
+- Composite views (icon + text rows, stat groups): [count]
+- Properly grouped with .combine or .ignore: [count]
+- Missing grouping: [list]
+```
+
+### 10. Accessibility Value Descriptions
+
+**Check:** Sliders, steppers, and progress indicators provide meaningful `.accessibilityValue()`.
+
+```swift
+// BAD - VoiceOver reads raw number
+Slider(value: $volume, in: 0...100)
+
+// GOOD - meaningful description
+Slider(value: $volume, in: 0...100)
+    .accessibilityValue("\(Int(volume)) percent")
+
+// GOOD - stepper with context
+Stepper("Quantity: \(quantity)", value: $quantity, in: 1...10)
+    .accessibilityValue("\(quantity) items")
+
+// GOOD - progress with context
+ProgressView(value: uploadProgress)
+    .accessibilityValue("\(Int(uploadProgress * 100)) percent uploaded")
+```
+
+**Report format:**
+```
+ACCESSIBILITY VALUES: [PASS/WARN]
+- Sliders/steppers/progress views: [count]
+- With accessibilityValue: [count]
+- Missing value descriptions: [list]
+```
+
+### 11. VoiceOver Sort Priority
+
+**Check:** When visual reading order does not match logical reading order, use `.accessibilitySortPriority()`.
+
+```swift
+// Problem: header is visually at top but VoiceOver reads sidebar first
+HStack {
+    Sidebar()          // Read first by VoiceOver
+    MainContent()      // Should be read first
+}
+
+// Fix: prioritize main content
+HStack {
+    Sidebar()
+        .accessibilitySortPriority(0)
+    MainContent()
+        .accessibilitySortPriority(1)  // Higher = read first
+}
+```
+
+**Report format:**
+```
+SORT PRIORITY: [PASS/WARN]
+- Non-standard reading order layouts: [count]
+- With sort priority set: [count]
+- Potentially confusing VoiceOver order: [list]
+```
+
+### 12. Dismiss Action for Custom Overlays
+
+**Check:** Custom sheets, popovers, and overlays provide `.accessibilityAction(.escape)` so VoiceOver users can dismiss them.
+
+```swift
+// BAD - custom overlay with no escape action
+ZStack {
+    content
+    if showOverlay {
+        CustomOverlay()  // No way for VoiceOver to dismiss
+    }
+}
+
+// GOOD - escape action to dismiss
+ZStack {
+    content
+    if showOverlay {
+        CustomOverlay()
+            .accessibilityAction(.escape) {
+                showOverlay = false
+            }
+    }
+}
+```
+
+**Report format:**
+```
+DISMISS ACTIONS: [PASS/WARN]
+- Custom overlays/sheets: [count]
+- With escape action: [count]
+- Missing escape action: [list]
+```
+
+### 13. Live Regions for Dynamic Content
+
+**Check:** Content that updates dynamically (timers, scores, live status) uses `.accessibilityAddTraits(.updatesFrequently)` so VoiceOver announces changes.
+
+```swift
+// BAD - score updates silently
+Text("\(homeScore) - \(awayScore)")
+
+// GOOD - VoiceOver announces updates
+Text("\(homeScore) - \(awayScore)")
+    .accessibilityAddTraits(.updatesFrequently)
+    .accessibilityLabel("Score: \(homeTeam) \(homeScore), \(awayTeam) \(awayScore)")
+
+// GOOD - countdown timer
+Text(timerText)
+    .accessibilityAddTraits(.updatesFrequently)
+    .accessibilityLabel("Time remaining: \(timerText)")
+```
+
+**Report format:**
+```
+LIVE REGIONS: [PASS/WARN]
+- Dynamic content (timers, scores, live indicators): [count]
+- With updatesFrequently trait: [count]
+- Missing live region markup: [list]
+```
+
+### 14. Magic Tap
+
+**Check:** Media or primary-action screens implement `.accessibilityAction(.magicTap)` (two-finger double-tap) for the most important action.
+
+```swift
+// GOOD - play/pause in a media player
+VideoPlayerView()
+    .accessibilityAction(.magicTap) {
+        isPlaying.toggle()
+    }
+
+// GOOD - start/stop in a workout tracker
+WorkoutView()
+    .accessibilityAction(.magicTap) {
+        isTracking.toggle()
+    }
+```
+
+**Report format:**
+```
+MAGIC TAP: [PASS/INFO]
+- Media/primary-action screens: [count]
+- With magicTap action: [count]
+- Screens that would benefit: [list]
+```
+
+### 15. Custom Rotor Entries
+
+**Check:** Complex lists with repeated structures (e.g., feed posts with headings, links, actions) expose custom rotor entries for efficient navigation.
+
+```swift
+// GOOD - custom rotor for navigating between post authors in a feed
+ScrollView {
+    LazyVStack {
+        ForEach(posts) { post in
+            PostRow(post: post)
+                .accessibilityRotorEntry(id: post.id, in: .postAuthors)
+        }
+    }
+}
+.accessibilityRotor("Post Authors") { entries in
+    // Rotor cycles through post authors
+}
+```
+
+**Report format:**
+```
+CUSTOM ROTORS: [INFO]
+- Complex list views: [count]
+- With custom rotor entries: [count]
+- Views that would benefit from rotors: [list]
+```
+
+### 16. Context Menu Parallel Paths
+
+**Check:** Context menus (long-press) must NOT be the sole interaction path for actions. Users with motor impairments cannot reliably long-press. Always provide `.swipeActions` as a parallel path when using `.contextMenu`.
+
+```swift
+// BAD - Context menu is the only way to delete
+ForEach(items) { item in
+    ItemRow(item: item)
+        .contextMenu {
+            Button("Delete", role: .destructive) { delete(item) }
+        }
+}
+
+// GOOD - Swipe actions as parallel path
+ForEach(items) { item in
+    ItemRow(item: item)
+        .swipeActions(edge: .trailing) {
+            Button("Delete", role: .destructive) { delete(item) }
+        }
+        .contextMenu {
+            Button("Delete", role: .destructive) { delete(item) }
+        }
+}
+```
+
+**Report format:**
+```
+CONTEXT MENU PATHS: [PASS/WARN]
+- Context menus: [count]
+- With parallel swipe actions: [count]
+- Context menu as sole path: [list - violations]
+```
+
 ---
 
 ## Audit Output Format
@@ -249,6 +500,9 @@ ACCESSIBLE ACTIONS: [PASS/WARN]
 - Critical (blocks users): [count]
 
 ### VoiceOver Support
+[details]
+
+### VoiceOver Grouping
 [details]
 
 ### Tap Targets
@@ -268,6 +522,27 @@ ACCESSIBLE ACTIONS: [PASS/WARN]
 ### Accessibility Actions
 [details]
 
+### Accessibility Values
+[details]
+
+### Sort Priority
+[details]
+
+### Dismiss Actions
+[details]
+
+### Live Regions
+[details]
+
+### Magic Tap
+[details]
+
+### Custom Rotors
+[details]
+
+### Context Menu Parallel Paths
+[details]
+
 ### Testing Checklist
 - [ ] Test with VoiceOver enabled
 - [ ] Test with Reduce Transparency
@@ -275,6 +550,12 @@ ACCESSIBLE ACTIONS: [PASS/WARN]
 - [ ] Test with Increase Contrast
 - [ ] Verify all tap targets >= 44pt
 - [ ] Test Assistive Access scene (iOS 26+)
+- [ ] Verify VoiceOver grouping on composite views
+- [ ] Check value descriptions on sliders/steppers
+- [ ] Verify reading order matches logical order
+- [ ] Test dismiss action on custom overlays
+- [ ] Verify live regions announce updates
+- [ ] Test Magic Tap on media/primary-action screens
 
 ### Recommendations
 1. [ordered by severity]
@@ -287,9 +568,9 @@ ACCESSIBLE ACTIONS: [PASS/WARN]
 
 | Level | Criteria | Action |
 |-------|----------|--------|
-| Critical | Missing VoiceOver labels on buttons, tap targets < 44pt | Block PR |
-| Warning | Missing Reduce Transparency fallback, no Assistive Access scene | Address before App Store |
-| Info | Optimization opportunities, enhanced experience suggestions | Optional improvement |
+| Critical | Missing VoiceOver labels on buttons, tap targets < 44pt, custom overlay with no escape/dismiss action | Block PR |
+| Warning | Missing Reduce Transparency fallback, no Assistive Access scene, context menu as sole interaction path, plain buttons without tap target frames, missing VoiceOver grouping on composite views, sliders/steppers without accessibilityValue, dynamic content without live region traits | Address before App Store |
+| Info | Sort priority optimization, Magic Tap opportunities, custom rotor entries for complex lists | Optional improvement |
 
 ---
 
@@ -307,3 +588,7 @@ ACCESSIBLE ACTIONS: [PASS/WARN]
     SimplifiedView()
 }
 ```
+
+---
+
+*Deeper accessibility patterns inspired by dadederk's iOS Accessibility Agent Skill.*

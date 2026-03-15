@@ -22,6 +22,14 @@ Controllers manage UI state and coordinate service calls. They are the glue betw
 
 ---
 
+## File Organization
+
+- **One controller per file, always.** Controllers are heavy — `@Observable`, task management, cancellation, `deinit` cleanup. Mixing controllers makes files hard to navigate.
+- Name the file after the controller: `UserController` → `UserController.swift`
+- Place the controller in the same subdomain folder as its screen, service, and models (flat, not nested MVC subfolders).
+
+---
+
 ## Basic Controller Pattern
 
 ```swift

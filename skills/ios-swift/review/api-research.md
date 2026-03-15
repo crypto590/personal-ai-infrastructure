@@ -175,6 +175,67 @@ When implementing a WWDC-announced feature:
 
 ---
 
+## Deprecated API Watchlist
+
+Common old APIs that LLMs generate incorrectly. Flag these during review and replace with modern equivalents.
+
+| Deprecated | Modern Replacement | Notes |
+|---|---|---|
+| `foregroundColor()` | `foregroundStyle()` | |
+| `cornerRadius()` | `clipShape(.rect(cornerRadius:))` | |
+| `NavigationView` | `NavigationStack` or `NavigationSplitView` | |
+| `NavigationLink(destination:)` | `navigationDestination(for:)` | |
+| `.navigationBarLeading` | `.topBarLeading` | |
+| `.navigationBarTrailing` | `.topBarTrailing` | |
+| `tabItem()` | `Tab` (iOS 26+) | |
+| `onChange` (1-param) | `onChange` (2-param or 0-param) | |
+| `GeometryReader` | `containerRelativeFrame()` or `visualEffect()` | When possible |
+| UIKit haptic generators | `sensoryFeedback()` | |
+| `overlay(_:alignment:)` | `overlay(alignment:content:)` | |
+| `PreviewProvider` | `#Preview` macro | |
+| `ObservableObject`/`@Published` | `@Observable` | Already in our conventions |
+| `.font(.system(size:))` on SF Symbols | Semantic text styles (`.title3`, `.body`) | Dynamic Type compliance |
+| `TextEditor` | `TextField(axis: .vertical)` | Supports placeholders |
+| `AnyView` | `@ViewBuilder`, `Group`, or generics | Performance anti-pattern |
+
+> Inspired by Paul Hudson's SwiftUI-Pro skill
+
+---
+
+## ContentUnavailableView for Empty States
+
+Use `ContentUnavailableView` (iOS 17+) for empty/missing data states instead of custom empty views. It provides a consistent, accessible, system-standard appearance.
+
+```swift
+// BAD - Custom empty view
+if items.isEmpty {
+    VStack {
+        Image(systemName: "tray")
+        Text("No items found")
+    }
+}
+
+// GOOD - System empty state
+if items.isEmpty {
+    ContentUnavailableView("No Items", systemImage: "tray", description: Text("Add items to get started."))
+}
+
+// GOOD - Built-in search empty state (automatically includes search term)
+if filteredItems.isEmpty {
+    ContentUnavailableView.search
+}
+```
+
+**When to use:**
+- Empty list/collection states
+- Search with no results (`ContentUnavailableView.search`)
+- Error states where content failed to load
+- Missing permissions preventing content display
+
+> Inspired by Paul Hudson's SwiftUI-Pro skill
+
+---
+
 ## Documentation Paths
 
 ### Xcode Built-in Documentation
