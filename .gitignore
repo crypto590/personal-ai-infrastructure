@@ -8,6 +8,7 @@ settings.local.json
 debug/
 file-history/
 session-env/
+sessions/
 shell-snapshots/
 statsig/
 todos/
@@ -36,6 +37,7 @@ plans/
 docs/
 # Runtime stats cache
 stats-cache.json
+mcp-needs-auth-cache.json
 *.log
 
 # ============================================
