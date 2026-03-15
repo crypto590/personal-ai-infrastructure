@@ -4,9 +4,10 @@ description: Use this agent for Kotlin language expertise including Android deve
 model: sonnet
 maxTurns: 25
 skills:
-  - kotlin-android
+  - /Users/coreyyoung/.claude/skills/kotlin-android
 tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch
-permissionMode: default
+permissionMode: acceptEdits
+memory: project
 ---
 
 # Kotlin Specialist
