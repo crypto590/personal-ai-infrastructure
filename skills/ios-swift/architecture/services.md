@@ -24,6 +24,15 @@ Services are the infrastructure layer. They handle async operations like network
 
 ---
 
+## File Organization
+
+- **One service per file, always.** Each service has its own protocol definition and implementation. Keeping them 1:1 makes testing and discovery clean.
+- Name the file after the service: `UserService` → `UserService.swift`
+- Include the service's protocol in the same file (e.g., `UserServiceProtocol` + `UserService` together).
+- Place the service in the same subdomain folder as its controller and screen (flat, not nested MVC subfolders).
+
+---
+
 ## Actor vs Struct Decision Tree
 
 ```

@@ -266,6 +266,62 @@ struct AppView: View {
 
 ---
 
+## Destructive Action Confirmation
+
+Use `confirmationDialog` (not `alert`) for destructive actions. Action sheets are harder to accidentally confirm and follow HIG patterns for irreversible operations.
+
+```swift
+// Controller declares the confirmation state
+@Observable
+@MainActor
+final class ItemController {
+    private(set) var showDeleteConfirmation = false
+    private var itemToDelete: Item?
+
+    func confirmDelete(_ item: Item) {
+        itemToDelete = item
+        showDeleteConfirmation = true
+    }
+
+    func performDelete() async {
+        guard let item = itemToDelete else { return }
+        await service.delete(item)
+        itemToDelete = nil
+    }
+
+    func cancelDelete() {
+        showDeleteConfirmation = false
+        itemToDelete = nil
+    }
+}
+
+// View renders confirmationDialog
+struct ItemView: View {
+    @State private var controller = ItemController()
+
+    var body: some View {
+        Content()
+            .confirmationDialog(
+                "Delete this item?",
+                isPresented: $controller.showDeleteConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Delete", role: .destructive) {
+                    Task { await controller.performDelete() }
+                }
+            } message: {
+                Text("This action cannot be undone.")
+            }
+    }
+}
+```
+
+**When to use each:**
+- `confirmationDialog` -- Destructive actions (delete, remove, discard, leave)
+- `alert` -- Informational messages, non-destructive confirmations, errors
+
+---
+
 ## Programmatic Dismiss
 
 ### Sheet Dismissal

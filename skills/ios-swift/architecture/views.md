@@ -134,6 +134,8 @@ var isValid: Bool {
 
 ### Loading States
 
+Use `ContentUnavailableView` (iOS 17+) for empty and error states instead of custom empty views. It provides a consistent, accessible, system-standard appearance.
+
 ```swift
 struct DataView: View {
     @State private var controller = DataController()
@@ -143,11 +145,17 @@ struct DataView: View {
             if controller.isLoading {
                 ProgressView("Loading...")
             } else if let error = controller.errorMessage {
-                ErrorView(message: error) {
-                    Task { await controller.retry() }
+                ContentUnavailableView {
+                    Label("Something Went Wrong", systemImage: "exclamationmark.triangle")
+                } description: {
+                    Text(error)
+                } actions: {
+                    Button("Retry") {
+                        Task { await controller.retry() }
+                    }
                 }
             } else if controller.data.isEmpty {
-                EmptyStateView()
+                ContentUnavailableView("No Data", systemImage: "tray", description: Text("Add items to get started."))
             } else {
                 DataList(items: controller.data)
             }
@@ -237,7 +245,7 @@ struct SearchView: View {
             if controller.isSearching {
                 ProgressView()
             } else if controller.results.isEmpty {
-                Text("No results")
+                ContentUnavailableView.search
             } else {
                 List(controller.results) { result in
                     ResultRow(result: result)
