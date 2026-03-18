@@ -1,6 +1,9 @@
 ---
 name: obsidian
 description: Unified Obsidian vault interaction via CLI and content creation. Read/write/search notes, manage tasks, create daily entries, work with Bases databases and JSON Canvas. Default vault "The_Hub". USE WHEN interacting with Obsidian vault, writing notes, searching knowledge base, managing tasks, creating canvas files, working with Bases, or logging session outcomes.
+metadata:
+  last_reviewed: 2026-03-17
+  review_cycle: 90
 ---
 
 # Obsidian Vault Interaction

@@ -1,41 +1,65 @@
 ---
 name: remember
-description: Add something to project memory for future sessions. Use /remember <what> to save decisions, focus areas, or open items.
+description: Save a typed memory episode to Neon Postgres. Use /remember <what> to save decisions, preferences, insights, or facts.
 argument-hint: "<what to remember>"
+metadata:
+  last_reviewed: 2026-03-17
+  review_cycle: 90
 ---
 
 # Remember Command
 
-Add information to this project's persistent memory.
+Save a memory episode to the unified Neon Postgres memory system.
 
 ## Usage
 
 ```
+/remember decision: Use Neon Postgres for memory because it supports pgvector
+/remember preference: Always use TypeScript for new services
+/remember insight: Cold starts on Neon take ~500ms after 5min idle
+/remember fact: Athlead uses Clerk for authentication
 /remember We chose PostgreSQL for better JSON support
-/remember focus: Building the auth system
-/remember todo: Add rate limiting to API
 ```
 
 ## Instructions for Alex
 
 When this skill is invoked with `$ARGUMENTS`:
 
-1. **Read the memory file** for current project:
-   ```python
-   import hashlib
-   from pathlib import Path
-   cwd = "<current working directory>"
-   project_hash = hashlib.sha256(cwd.encode()).hexdigest()[:12]
-   memory_file = Path.home() / ".claude" / "memory" / "projects" / f"{project_hash}.json"
+1. **Parse the input** to determine episode type and content:
+   - Starts with `decision:` → type=decision, salience=7
+   - Starts with `preference:` → type=preference, salience=8
+   - Starts with `insight:` → type=insight, salience=6
+   - Starts with `fact:` → type=fact, salience=5
+   - Starts with `failure:` → type=failure, salience=7
+   - No prefix → type=fact, salience=5
+
+2. **Extract reasoning** if present:
+   - Look for "because", "since", "reason:", "why:" to split content from reasoning
+   - Example: "Use X because Y" → content="Use X", reasoning="Y"
+
+3. **Run the Python command** to save to Neon:
+   ```bash
+   uv run python3 -c "
+   import sys; sys.path.insert(0, '$HOME/.claude/hooks')
+   from memory_db import add_episode, detect_product
+   product = detect_product('$CWD')
+   eid = add_episode(
+       episode_type='<TYPE>',
+       subject='<SUBJECT_MAX_120>',
+       content='<FULL_CONTENT>',
+       reasoning='<REASONING_OR_NONE>',
+       salience=<SALIENCE>,
+       tags=[<RELEVANT_TAGS>],
+       product=product,
+       project_path='$CWD',
+   )
+   print(f'Saved: {eid}')
+   "
    ```
 
-2. **Parse the input** and categorize:
-   - Starts with `focus:` → Update `currentFocus`
-   - Starts with `todo:` → Add to `openItems` array
-   - Otherwise → Add to `keyDecisions` array
+4. **Export to Obsidian** after saving:
+   ```bash
+   uv run ~/.claude/hooks/memory_obsidian.py --product <PRODUCT>
+   ```
 
-3. **Update the JSON file** with the new information
-
-4. **Sync to Obsidian** at `~/Desktop/The_Hub/AI-Memory/[project].md`
-
-5. **Confirm** what was remembered
+5. **Confirm** what was saved with type, salience, and product.

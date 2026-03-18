@@ -32,10 +32,10 @@ Or ignore this message if you want to start fresh.
 
 EOF
 
-  # Voice notification
-  curl -s -X POST http://localhost:8888/notify \
+  # Voice notification via /speak endpoint (agent-aware)
+  curl -s -X POST http://localhost:8888/speak \
     -H "Content-Type: application/json" \
-    -d '{"message":"Saved autopilot state detected","voice_id":"O4lTuRmkE5LyjL2YhMIg","voice_enabled":true}' \
+    -d '{"message":"Saved autopilot state detected","agent":"alex"}' \
     > /dev/null 2>&1 &
 fi
 

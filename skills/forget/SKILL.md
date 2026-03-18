@@ -1,42 +1,64 @@
 ---
 name: forget
-description: Remove something from project memory. Use /forget <what> to remove items or /forget all to clear everything.
+description: Remove a memory episode (append-only supersession). Use /forget <query> to find and deactivate memories.
 argument-hint: "<what to forget | all>"
+metadata:
+  last_reviewed: 2026-03-17
+  review_cycle: 90
 ---
 
 # Forget Command
 
-Remove information from this project's persistent memory.
+Supersede (soft-delete) memory episodes. Uses append-only supersession — nothing is hard deleted.
 
 ## Usage
 
 ```
 /forget PostgreSQL decision
-/forget todo: rate limiting
-/forget all
+/forget rate limiting todo
+/forget all athlead
 ```
 
 ## Instructions for Alex
 
 When this skill is invoked with `$ARGUMENTS`:
 
-1. **Read the memory file** for current project:
-   ```python
-   import hashlib
-   from pathlib import Path
-   cwd = "<current working directory>"
-   project_hash = hashlib.sha256(cwd.encode()).hexdigest()[:12]
-   memory_file = Path.home() / ".claude" / "memory" / "projects" / f"{project_hash}.json"
+1. **Search for matching episodes**:
+   ```bash
+   uv run python3 -c "
+   import sys, json; sys.path.insert(0, '$HOME/.claude/hooks')
+   from memory_db import find_matching, detect_product, format_episode_display
+   product = detect_product('$CWD')
+   results = find_matching('$QUERY', product=product, limit=10)
+   for ep in results:
+       print(format_episode_display(ep))
+       print('  ID:', ep['id'])
+       print()
+   if not results:
+       print('No matching episodes found.')
+   "
    ```
 
-2. **Parse the input**:
-   - `all` → Clear all memory (reset to empty state)
-   - `focus:` prefix → Clear `currentFocus`
-   - `todo:` prefix → Remove matching item from `openItems`
-   - Otherwise → Remove matching item from `keyDecisions`
+2. **Show matches** to user and confirm which to forget.
 
-3. **Update the JSON file**
+3. **Supersede selected episodes**:
+   ```bash
+   uv run python3 -c "
+   import sys; sys.path.insert(0, '$HOME/.claude/hooks')
+   from memory_db import soft_delete
+   soft_delete('<EPISODE_UUID>')
+   print('Episode superseded.')
+   "
+   ```
 
-4. **Sync to Obsidian** at `~/Desktop/The_Hub/AI-Memory/[project].md`
+4. **Export updated state** to Obsidian:
+   ```bash
+   uv run ~/.claude/hooks/memory_obsidian.py --product <PRODUCT>
+   ```
 
-5. **Confirm** what was forgotten
+5. **Confirm** what was forgotten.
+
+## Special Cases
+
+- `all` → Search broadly, confirm before batch supersession
+- If query matches multiple episodes, show all and let user choose

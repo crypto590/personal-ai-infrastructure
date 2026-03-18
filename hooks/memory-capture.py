@@ -1,148 +1,125 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
+# /// script
+# dependencies = ["psycopg[binary]"]
+# ///
 """
 Memory Capture Hook (Stop)
-Captures context after each Claude response and persists to memory file.
-Syncs to Obsidian for human-readable access.
+Logs session activity. Spawns background auto-extraction with guards:
+  1. Skip if subagent (agent_id present)
+  2. Lockfile prevents concurrent extractions
+  3. 5-minute cooldown between extractions per product
 """
 
 import json
-import hashlib
 import os
+import subprocess
 import sys
-from datetime import datetime
+import time
+import fcntl
 from pathlib import Path
 
-# Directories
-MEMORY_DIR = Path.home() / ".claude" / "memory"
-PROJECTS_DIR = MEMORY_DIR / "projects"
-OBSIDIAN_DIR = Path.home() / "Desktop" / "The_Hub" / "AI-Memory"
+sys.path.insert(0, str(Path(__file__).parent))
 
-def get_project_hash(path: str) -> str:
-    """Generate consistent hash for project path."""
-    return hashlib.sha256(path.encode()).hexdigest()[:12]
+LOCK_DIR = Path("/tmp")
+COOLDOWN_SECONDS = 300  # 5 minutes
 
-def get_project_name(path: str) -> str:
-    """Extract human-readable project name from path."""
-    return Path(path).name or "root"
 
-def load_memory(memory_file: Path) -> dict:
-    """Load existing memory or create new."""
-    if memory_file.exists():
+def _can_extract(product: str) -> bool:
+    """Check lockfile and cooldown before extraction."""
+    lock_path = LOCK_DIR / f".pai-extracting-{product}.lock"
+    cooldown_path = LOCK_DIR / f".pai-extract-ts-{product}"
+
+    # Check cooldown
+    if cooldown_path.exists():
         try:
-            with open(memory_file) as f:
-                return json.load(f)
-        except json.JSONDecodeError:
+            last_ts = float(cooldown_path.read_text().strip())
+            if time.time() - last_ts < COOLDOWN_SECONDS:
+                return False
+        except (ValueError, OSError):
             pass
-    return {}
 
-def save_memory(memory_file: Path, memory: dict):
-    """Save memory to JSON file."""
-    memory_file.parent.mkdir(parents=True, exist_ok=True)
-    with open(memory_file, "w") as f:
-        json.dump(memory, f, indent=2, default=str)
+    # Check lockfile (non-blocking)
+    try:
+        lock_fd = open(lock_path, 'w')
+        fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        lock_fd.close()
+    except (IOError, OSError):
+        return False
 
-def sync_to_obsidian(memory: dict, project_name: str):
-    """Sync memory to Obsidian as human-readable markdown."""
-    OBSIDIAN_DIR.mkdir(parents=True, exist_ok=True)
+    return True
 
-    # Sanitize project name for filename
-    safe_name = "".join(c if c.isalnum() or c in "-_" else "-" for c in project_name)
-    obsidian_file = OBSIDIAN_DIR / f"{safe_name}.md"
 
-    # Build markdown content
-    lines = [
-        f"# {project_name}",
-        "",
-        f"**Last Updated:** {memory.get('project', {}).get('lastUpdated', 'Unknown')}",
-        f"**Sessions:** {memory.get('sessionCount', 0)}",
-        f"**Path:** `{memory.get('project', {}).get('path', 'Unknown')}`",
-        "",
-    ]
+def _mark_extraction(product: str):
+    """Record extraction timestamp for cooldown."""
+    cooldown_path = LOCK_DIR / f".pai-extract-ts-{product}"
+    try:
+        cooldown_path.write_text(str(time.time()))
+    except OSError:
+        pass
 
-    if memory.get("currentFocus"):
-        lines.extend([
-            "## Current Focus",
-            memory["currentFocus"],
-            "",
-        ])
 
-    if memory.get("keyDecisions"):
-        lines.extend([
-            "## Key Decisions",
-            "",
-        ])
-        for decision in memory["keyDecisions"]:
-            lines.append(f"- {decision}")
-        lines.append("")
+def _spawn_extraction(transcript_path: str, product: str, cwd: str):
+    """Spawn background process to extract episodes via claude CLI."""
+    extractor_script = Path(__file__).parent / "memory_extract_bg.py"
+    if not extractor_script.exists():
+        return
 
-    if memory.get("openItems"):
-        lines.extend([
-            "## Open Items",
-            "",
-        ])
-        for item in memory["openItems"]:
-            lines.append(f"- [ ] {item}")
-        lines.append("")
-
-    if memory.get("recentFiles"):
-        lines.extend([
-            "## Recent Files",
-            "",
-        ])
-        for f in memory["recentFiles"][:10]:
-            lines.append(f"- `{f}`")
-        lines.append("")
-
-    with open(obsidian_file, "w") as f:
-        f.write("\n".join(lines))
+    try:
+        _mark_extraction(product)
+        subprocess.Popen(
+            [
+                "uv", "run", str(extractor_script),
+                "--transcript", transcript_path,
+                "--product", product,
+                "--cwd", cwd,
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+    except Exception:
+        pass
 
 
 def main():
-    # Read hook input from stdin
     try:
         hook_input = json.load(sys.stdin)
     except json.JSONDecodeError:
         hook_input = {}
 
-    # Get current working directory (project)
+    # Guard: skip subagent stops
+    if hook_input.get("is_subagent") or hook_input.get("agent_id"):
+        print(json.dumps({"continue": True}))
+        return
+
     cwd = hook_input.get("cwd", os.getcwd())
-    project_hash = get_project_hash(cwd)
-    project_name = get_project_name(cwd)
+    transcript = hook_input.get("transcript_path", "")
 
-    # Memory file path
-    memory_file = PROJECTS_DIR / f"{project_hash}.json"
-
-    # Load existing memory
-    memory = load_memory(memory_file)
-
-    # Update project info
-    memory["project"] = {
-        "path": cwd,
-        "name": project_name,
-        "lastUpdated": datetime.now().isoformat(),
-    }
-
-    # Increment session count (each stop is a response)
-    memory["sessionCount"] = memory.get("sessionCount", 0) + 1
-
-    # Initialize arrays if not present
-    memory.setdefault("recentFiles", [])
-    memory.setdefault("keyDecisions", [])
-    memory.setdefault("openItems", [])
-    memory.setdefault("currentFocus", "")
-
-    # Save memory
-    save_memory(memory_file, memory)
-
-    # Sync to Obsidian
     try:
-        sync_to_obsidian(memory, project_name)
+        from memory_db import connect, detect_product, log_session_end
+
+        product = detect_product(cwd)
+
+        # Find the most recent session for this project
+        with connect() as conn:
+            row = conn.execute(
+                "SELECT id FROM sessions WHERE project_path = %s "
+                "ORDER BY started_at DESC LIMIT 1",
+                (cwd,),
+            ).fetchone()
+            if row:
+                log_session_end(row["id"])
+
+        # Background extraction with guards
+        if transcript and Path(transcript).exists():
+            if _can_extract(product):
+                _spawn_extraction(transcript, product, cwd)
+
     except Exception:
-        # Don't fail the hook if Obsidian sync fails
         pass
 
-    # Hook output - no blocking, no output injection
     print(json.dumps({"continue": True}))
+
 
 if __name__ == "__main__":
     main()

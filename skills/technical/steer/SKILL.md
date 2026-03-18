@@ -2,6 +2,9 @@
 name: steer
 description: macOS GUI automation CLI for agents. Provides eyes and hands on the local Mac via screenshots, OCR, accessibility tree traversal, mouse/keyboard control, and window management.
 key_info: "Binary at ~/.claude/apps/steer/.build/debug/steer. Requires Accessibility + Screen Recording permissions in System Settings > Privacy & Security. Always focus app first, then observe, then act."
+metadata:
+  last_reviewed: 2026-03-17
+  review_cycle: 90
 ---
 
 # Steer — macOS GUI Automation

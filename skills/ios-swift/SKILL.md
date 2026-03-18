@@ -8,6 +8,9 @@ description: >
   Trigger words: iOS, Swift, SwiftUI, Xcode, Apple, accessibility, concurrency, Liquid Glass, MVC architecture,
   code review, pattern validation, VoiceOver, actor, async/await, task cancellation, Sendable, SwiftLint, build,
   TestFlight, distribution, App Store Connect, code signing, archive, provisioning profile.
+metadata:
+  last_reviewed: 2026-03-17
+  review_cycle: 90
 ---
 
 # iOS & Swift Development

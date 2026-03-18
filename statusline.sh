@@ -35,11 +35,22 @@ if [ -n "$context_used" ]; then
     progress_bar=$(printf "%${filled}s" | tr ' ' '█')$(printf "%${empty}s" | tr ' ' '░')
 fi
 
+# Voice server status indicator
+voice_icon=""
+if curl -s --max-time 1 http://localhost:8888/health > /dev/null 2>&1; then
+    voice_icon="🔊"
+else
+    voice_icon="🔇"
+fi
+
 # Build status line
-# 1. Model Name (cyan)
+# 1. Voice indicator
+printf "%s " "$voice_icon"
+
+# 2. Model Name (cyan)
 printf "\033[36m%s\033[0m" "$model"
 
-# 2. Progress bar (color based on usage)
+# 3. Progress bar (color based on usage)
 if [ -n "$progress_bar" ]; then
     if [ "$(printf '%.0f' "$context_used")" -ge 80 ]; then
         printf " \033[31m%s\033[0m" "$progress_bar"  # Red if >= 80%
@@ -50,12 +61,12 @@ if [ -n "$progress_bar" ]; then
     fi
 fi
 
-# 3. Percentage context used (yellow)
+# 4. Percentage context used (yellow)
 if [ -n "$context_used" ]; then
     printf " \033[33m%.0f%%\033[0m" "$context_used"
 fi
 
-# 4. Git Branch (red)
+# 5. Git Branch (red)
 if [ -n "$git_branch" ]; then
     printf " \033[31m(%s)\033[0m" "$git_branch"
 fi
