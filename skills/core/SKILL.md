@@ -82,6 +82,9 @@ description: |
   === SECURITY (Always Active) ===
   - `~/.claude/` is private - never commit to public repos
   - Run `git remote -v` before commits (delegate to agent)
+metadata:
+  last_reviewed: 2026-03-17
+  review_cycle: 90
 ---
 
 # Alex — Personal AI Orchestrator

@@ -2,6 +2,9 @@
 name: drive
 description: Terminal automation CLI for AI agents via tmux. Orchestrate multiple terminal sessions, run commands with reliable completion detection, and execute in parallel.
 key_info: "Location: ~/.claude/apps/drive/ | Run: cd ~/.claude/apps/drive && uv run drive <command> | Requires: tmux (brew install tmux)"
+metadata:
+  last_reviewed: 2026-03-17
+  review_cycle: 90
 ---
 
 # Drive CLI — Terminal Automation for AI Agents

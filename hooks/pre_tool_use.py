@@ -1,180 +1,258 @@
 #!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">=3.8"
+# dependencies = ["pyyaml"]
 # ///
+
+"""
+PreToolUse Security Hook
+
+YAML-configurable security patterns with three tiers:
+  blocked  -- exit(2), tool call rejected
+  confirm  -- exit(1), user must approve
+  alert    -- logged but allowed
+
+Also enforces file path access control and JSONL audit logging.
+"""
 
 import json
 import sys
 import re
+import fnmatch
 from pathlib import Path
+from datetime import datetime, timezone
 
-def is_dangerous_rm_command(command):
-    """
-    Comprehensive detection of dangerous rm commands.
-    Matches various forms of rm -rf and similar destructive patterns.
-    """
-    # Normalize command by removing extra spaces and converting to lowercase
-    normalized = ' '.join(command.lower().split())
-    
-    # Pattern 1: Standard rm -rf variations
-    patterns = [
-        r'\brm\s+.*-[a-z]*r[a-z]*f',  # rm -rf, rm -fr, rm -Rf, etc.
-        r'\brm\s+.*-[a-z]*f[a-z]*r',  # rm -fr variations
-        r'\brm\s+--recursive\s+--force',  # rm --recursive --force
-        r'\brm\s+--force\s+--recursive',  # rm --force --recursive
-        r'\brm\s+-r\s+.*-f',  # rm -r ... -f
-        r'\brm\s+-f\s+.*-r',  # rm -f ... -r
-    ]
-    
-    # Check for dangerous patterns
-    for pattern in patterns:
-        if re.search(pattern, normalized):
-            return True
-    
-    # Pattern 2: Check for rm with recursive flag targeting dangerous paths
-    dangerous_paths = [
-        r'/',           # Root directory
-        r'/\*',         # Root with wildcard
-        r'~',           # Home directory
-        r'~/',          # Home directory path
-        r'\$HOME',      # Home environment variable
-        r'\.\.',        # Parent directory references
-        r'\*',          # Wildcards in general rm -rf context
-        r'\.',          # Current directory
-        r'\.\s*$',      # Current directory at end of command
-    ]
-    
-    if re.search(r'\brm\s+.*-[a-z]*r', normalized):  # If rm has recursive flag
-        for path in dangerous_paths:
-            if re.search(path, normalized):
-                return True
-    
-    return False
+# ---------------------------------------------------------------------------
+# Security Config (YAML with hardcoded fallback)
+# ---------------------------------------------------------------------------
 
-def is_env_file_access(tool_name, tool_input):
-    """
-    Check if any tool is trying to modify .env files containing sensitive data.
-    Allows reading .env files but blocks write/modify operations.
-    """
-    if tool_name in ['Read', 'Edit', 'MultiEdit', 'Write', 'Bash']:
-        # Check file paths for file-based tools
-        if tool_name in ['Edit', 'MultiEdit', 'Write']:
-            # Block Edit, MultiEdit, and Write operations on .env files
-            file_path = tool_input.get('file_path', '')
-            if '.env' in file_path and not file_path.endswith('.env.sample'):
-                return True
+SECURITY_YAML = Path(__file__).parent / "security.yaml"
 
-        # Allow Read tool for .env files (tool_name == 'Read' is NOT blocked)
+_cached_config = None
 
-        # Check bash commands for .env file modifications
-        elif tool_name == 'Bash':
-            command = tool_input.get('command', '')
-            # Pattern to detect .env file modifications (but allow read operations like cat)
-            env_patterns = [
-                r'echo\s+.*>\s*\.env\b(?!\.sample)',  # echo > .env
-                r'touch\s+.*\.env\b(?!\.sample)',  # touch .env
-                r'cp\s+.*\.env\b(?!\.sample)',  # cp to .env
-                r'mv\s+.*\.env\b(?!\.sample)',  # mv to .env
-                r'rm\s+.*\.env\b(?!\.sample)',  # rm .env
-                r'>\s*\.env\b(?!\.sample)',  # redirect to .env
-                r'>>\s*\.env\b(?!\.sample)',  # append to .env
-            ]
 
-            for pattern in env_patterns:
-                if re.search(pattern, command):
-                    return True
+def load_security_config() -> dict:
+    """Load security patterns from YAML config, with fallback."""
+    global _cached_config
+    if _cached_config is not None:
+        return _cached_config
 
-    return False
+    try:
+        import yaml
+        if SECURITY_YAML.exists():
+            with open(SECURITY_YAML) as f:
+                _cached_config = yaml.safe_load(f) or {}
+                return _cached_config
+    except Exception:
+        pass
 
-def detect_task_creation_intent(input_data):
-    """
-    Detect if user is trying to create persistent tasks from documents.
-    Returns (is_task_creation, should_remind) tuple.
-    """
-    # Get user message if available
-    user_message = input_data.get('user_message', '').lower()
-    tool_name = input_data.get('tool_name', '')
+    # Fallback: minimal hardcoded config
+    _cached_config = {
+        "commands": {
+            "blocked": [
+                {"pattern": r"rm\s+.*-[a-z]*r[a-z]*f", "description": "rm -rf"},
+                {"pattern": r"rm\s+.*-[a-z]*f[a-z]*r", "description": "rm -fr"},
+                {"pattern": r"chmod\s+777", "description": "World-writable"},
+            ],
+            "confirm": [
+                {"pattern": r"git\s+push\s+.*--force", "description": "Force push"},
+            ],
+            "alert": [],
+        },
+        "files": {
+            "zero_access": ["~/.ssh/*", "~/.gnupg/*"],
+            "read_only": [".env", ".env.*", "*.pem", "*.key"],
+            "no_delete": ["*.sqlite", "*.db"],
+        },
+    }
+    return _cached_config
 
-    # Task creation patterns
-    task_creation_patterns = [
-        r'create tasks?\s+from',
-        r'parse\s+.+\s+into tasks?',
-        r'break\s+down\s+.+\s+into tasks?',
-        r'generate tasks?\s+from',
-        r'convert\s+.+\s+to tasks?',
-        r'tasks?\s+from\s+@',  # @file reference pattern
-    ]
 
-    # Check if user message contains task creation intent
-    is_task_intent = any(re.search(pattern, user_message) for pattern in task_creation_patterns)
+# ---------------------------------------------------------------------------
+# Env var stripping (bypass prevention)
+# ---------------------------------------------------------------------------
 
-    # Check if using TodoWrite when task creation intent detected
-    if is_task_intent and tool_name == 'TodoWrite':
-        return True, True
+def strip_env_vars(cmd: str) -> str:
+    """Strip leading env var assignments: LANG=C rm -rf / -> rm -rf /"""
+    return re.sub(r'^(\w+=[^\s]*\s+)*', '', cmd.strip())
 
-    return is_task_intent, False
+
+# ---------------------------------------------------------------------------
+# Command security
+# ---------------------------------------------------------------------------
+
+def check_command_security(command: str, config: dict) -> tuple:
+    """Check command against security patterns. Returns (action, description)."""
+    normalized = strip_env_vars(command)
+
+    for rule in config.get("commands", {}).get("blocked", []):
+        if re.search(rule["pattern"], normalized, re.IGNORECASE):
+            return "blocked", rule.get("description", "Dangerous command")
+
+    for rule in config.get("commands", {}).get("confirm", []):
+        if re.search(rule["pattern"], normalized, re.IGNORECASE):
+            return "confirm", rule.get("description", "Risky command")
+
+    for rule in config.get("commands", {}).get("alert", []):
+        if re.search(rule["pattern"], normalized, re.IGNORECASE):
+            return "alert", rule.get("description", "Notable command")
+
+    return "allow", ""
+
+
+# ---------------------------------------------------------------------------
+# File path access control
+# ---------------------------------------------------------------------------
+
+def expand_path(pattern: str) -> str:
+    """Expand ~ in path patterns."""
+    if pattern.startswith("~"):
+        return str(Path.home()) + pattern[1:]
+    return pattern
+
+
+def check_file_access(tool_name: str, file_path: str, config: dict) -> tuple:
+    """Check file path against access rules. Returns (action, description)."""
+    if not file_path:
+        return "allow", ""
+
+    try:
+        resolved = str(Path(file_path).expanduser().resolve())
+    except Exception:
+        resolved = file_path
+
+    basename = Path(file_path).name
+    file_rules = config.get("files", {})
+
+    # Zero access: block all operations
+    for pattern in file_rules.get("zero_access", []):
+        expanded = expand_path(pattern)
+        parent_dir = expanded.rstrip("/*")
+        if fnmatch.fnmatch(resolved, expanded) or resolved.startswith(parent_dir + "/"):
+            return "blocked", f"Access denied: {pattern}"
+
+    # Read only: block Write/Edit, allow Read
+    if tool_name in ("Write", "Edit", "MultiEdit"):
+        for pattern in file_rules.get("read_only", []):
+            expanded = expand_path(pattern)
+            if fnmatch.fnmatch(basename, pattern) or fnmatch.fnmatch(resolved, expanded):
+                if not file_path.endswith('.env.sample'):
+                    return "blocked", f"Read-only file: {pattern}"
+
+    return "allow", ""
+
+
+# ---------------------------------------------------------------------------
+# JSONL Audit Log
+# ---------------------------------------------------------------------------
+
+def log_event(tool_name: str, action: str, details: str = ""):
+    """Append event to JSONL audit log (append-only, no read overhead)."""
+    try:
+        log_dir = Path.home() / '.claude' / 'logs'
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_path = log_dir / 'events.jsonl'
+
+        entry = {
+            "ts": datetime.now(timezone.utc).isoformat(),
+            "tool": tool_name,
+            "action": action,
+        }
+        if details:
+            entry["details"] = details[:200]
+
+        with open(log_path, 'a') as f:
+            f.write(json.dumps(entry) + '\n')
+    except Exception:
+        pass
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
 
 def main():
     try:
-        # Read JSON input from stdin
         input_data = json.load(sys.stdin)
-
         tool_name = input_data.get('tool_name', '')
         tool_input = input_data.get('tool_input', {})
 
-        # Check for task creation intent with TodoWrite (remind, don't block)
-        _, should_remind = detect_task_creation_intent(input_data)
-        if should_remind:
-            print("⚠️  REMINDER: Use task_manager.py for PERSISTENT task creation, not TodoWrite", file=sys.stderr)
-            print("TodoWrite is for session-level work tracking only", file=sys.stderr)
-            print("See: ~/.claude/skills/business/task-management/SKILL.md", file=sys.stderr)
-            # Don't block, just remind - exit 0 to allow continuation
+        config = load_security_config()
 
-        # Check for .env file modifications (blocks write/modify operations on sensitive environment files)
-        if is_env_file_access(tool_name, tool_input):
-            print("BLOCKED: Modifying .env files containing sensitive data is prohibited", file=sys.stderr)
-            print("Reading .env files is allowed. Use .env.sample for template files.", file=sys.stderr)
-            sys.exit(2)  # Exit code 2 blocks tool call and shows error to Claude
-
-        # Check for dangerous rm -rf commands
+        # --- Command security (Bash tool) ---
         if tool_name == 'Bash':
             command = tool_input.get('command', '')
+            action, desc = check_command_security(command, config)
 
-            # Block rm -rf commands with comprehensive pattern matching
-            if is_dangerous_rm_command(command):
-                print("BLOCKED: Dangerous rm command detected and prevented", file=sys.stderr)
-                sys.exit(2)  # Exit code 2 blocks tool call and shows error to Claude
-        
-        # Ensure log directory exists (central location)
-        log_dir = Path.home() / '.claude' / 'logs'
-        log_dir.mkdir(parents=True, exist_ok=True)
-        log_path = log_dir / 'pre_tool_use.json'
-        
-        # Read existing log data or initialize empty list
-        if log_path.exists():
-            with open(log_path, 'r') as f:
-                try:
-                    log_data = json.load(f)
-                except (json.JSONDecodeError, ValueError):
-                    log_data = []
-        else:
-            log_data = []
-        
-        # Append new data
-        log_data.append(input_data)
-        
-        # Write back to file with formatting
-        with open(log_path, 'w') as f:
-            json.dump(log_data, f, indent=2)
-        
+            if action == "blocked":
+                log_event(tool_name, "blocked", desc)
+                print(f"BLOCKED: {desc}", file=sys.stderr)
+                sys.exit(2)
+            elif action == "confirm":
+                log_event(tool_name, "confirm", desc)
+                print(f"CONFIRM: {desc} -- requires user approval", file=sys.stderr)
+                sys.exit(1)
+            elif action == "alert":
+                log_event(tool_name, "alert", desc)
+                print(f"ALERT: {desc}", file=sys.stderr)
+
+            # Check no_delete patterns in rm commands
+            stripped = strip_env_vars(command)
+            if re.search(r'\brm\s+', stripped):
+                for pattern in config.get("files", {}).get("no_delete", []):
+                    ext = pattern.lstrip("*")
+                    if ext and ext in stripped:
+                        log_event(tool_name, "blocked", f"Delete protected: {pattern}")
+                        print(f"BLOCKED: Cannot delete {pattern} files", file=sys.stderr)
+                        sys.exit(2)
+
+            # Check env file modifications via bash
+            env_write_patterns = [
+                r'echo\s+.*>\s*\.env\b(?!\.sample)',
+                r'touch\s+.*\.env\b(?!\.sample)',
+                r'cp\s+.*\.env\b(?!\.sample)',
+                r'mv\s+.*\.env\b(?!\.sample)',
+                r'rm\s+.*\.env\b(?!\.sample)',
+                r'>\s*\.env\b(?!\.sample)',
+                r'>>\s*\.env\b(?!\.sample)',
+            ]
+            for pattern in env_write_patterns:
+                if re.search(pattern, command):
+                    log_event(tool_name, "blocked", "Env file modification via bash")
+                    print("BLOCKED: Modifying .env files is prohibited", file=sys.stderr)
+                    sys.exit(2)
+
+        # --- File access control (Read/Write/Edit) ---
+        file_path = tool_input.get('file_path', '')
+        if file_path and tool_name in ('Read', 'Write', 'Edit', 'MultiEdit'):
+            action, desc = check_file_access(tool_name, file_path, config)
+            if action == "blocked":
+                log_event(tool_name, "blocked", desc)
+                print(f"BLOCKED: {desc}", file=sys.stderr)
+                sys.exit(2)
+
+        # --- Task creation reminder ---
+        if tool_name == 'TodoWrite':
+            user_message = input_data.get('user_message', '').lower()
+            task_patterns = [
+                r'create tasks?\s+from', r'parse\s+.+\s+into tasks?',
+                r'break\s+down\s+.+\s+into tasks?', r'generate tasks?\s+from',
+            ]
+            if any(re.search(p, user_message) for p in task_patterns):
+                print("REMINDER: Use task_manager.py for PERSISTENT tasks", file=sys.stderr)
+
+        # Log allowed event
+        log_event(tool_name, "allow")
+
         sys.exit(0)
-        
+
     except json.JSONDecodeError:
-        # Gracefully handle JSON decode errors
         sys.exit(0)
+    except SystemExit:
+        raise
     except Exception:
-        # Handle any other errors gracefully
         sys.exit(0)
+
 
 if __name__ == '__main__':
     main()

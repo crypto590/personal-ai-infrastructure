@@ -1,0 +1,63 @@
+# PAI Security Configuration
+# Used by hooks/pre_tool_use.py
+#
+# Categories:
+#   blocked  — Hard block, exit(2). Tool call is rejected.
+#   confirm  — Ask user, exit(1). User must approve.
+#   alert    — Log but allow. Noted in audit log.
+
+commands:
+  blocked:
+    - pattern: 'rm\s+.*-[a-z]*r[a-z]*f'
+      description: "rm -rf variants"
+    - pattern: 'rm\s+.*-[a-z]*f[a-z]*r'
+      description: "rm -fr variants"
+    - pattern: 'rm\s+--recursive\s+--force'
+      description: "rm --recursive --force"
+    - pattern: 'rm\s+--force\s+--recursive'
+      description: "rm --force --recursive"
+    - pattern: 'rm\s+-r\s+.*-f'
+      description: "rm -r ... -f (split flags)"
+    - pattern: 'rm\s+-f\s+.*-r'
+      description: "rm -f ... -r (split flags)"
+    - pattern: 'chmod\s+777'
+      description: "World-writable permissions"
+    - pattern: 'mkfs\.'
+      description: "Filesystem format"
+    - pattern: ':\(\)\{.*\|.*&.*\};:'
+      description: "Fork bomb"
+
+  confirm:
+    - pattern: 'git\s+push\s+.*--force'
+      description: "Force push"
+    - pattern: 'drop\s+(table|database)'
+      description: "Drop table/database"
+    - pattern: 'truncate\s+table'
+      description: "Truncate table"
+    - pattern: 'git\s+reset\s+--hard'
+      description: "Hard reset"
+
+  alert:
+    - pattern: 'curl.*\|.*sh'
+      description: "Pipe curl to shell"
+    - pattern: 'wget.*\|.*sh'
+      description: "Pipe wget to shell"
+
+files:
+  zero_access:
+    - "~/.ssh/*"
+    - "~/.gnupg/*"
+    - "~/.aws/credentials"
+    - "~/.aws/config"
+
+  read_only:
+    - ".env"
+    - ".env.*"
+    - "*.pem"
+    - "*.key"
+    - "*.p12"
+
+  no_delete:
+    - "*.sqlite"
+    - "*.db"
+    - "*.sqlite3"

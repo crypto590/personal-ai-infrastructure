@@ -3,46 +3,44 @@
 # requires-python = ">=3.8"
 # ///
 
+"""
+PostToolUse Hook — JSONL audit logging.
+
+Append-only JSONL format eliminates the read-modify-write overhead
+that caused the old JSON array approach to balloon to 2.5MB.
+"""
+
 import json
-import os
 import sys
 from pathlib import Path
+from datetime import datetime, timezone
+
 
 def main():
     try:
-        # Read JSON input from stdin
         input_data = json.load(sys.stdin)
 
-        # Ensure log directory exists (central location)
         log_dir = Path.home() / '.claude' / 'logs'
         log_dir.mkdir(parents=True, exist_ok=True)
-        log_path = log_dir / 'post_tool_use.json'
+        log_path = log_dir / 'events.jsonl'
 
-        # Read existing log data or initialize empty list
-        if log_path.exists():
-            with open(log_path, 'r') as f:
-                try:
-                    log_data = json.load(f)
-                except (json.JSONDecodeError, ValueError):
-                    log_data = []
-        else:
-            log_data = []
+        tool_name = input_data.get('tool_name', '')
+        entry = {
+            "ts": datetime.now(timezone.utc).isoformat(),
+            "hook": "post",
+            "tool": tool_name,
+        }
 
-        # Append new data
-        log_data.append(input_data)
-
-        # Write back to file with formatting
-        with open(log_path, 'w') as f:
-            json.dump(log_data, f, indent=2)
+        with open(log_path, 'a') as f:
+            f.write(json.dumps(entry) + '\n')
 
         sys.exit(0)
 
     except json.JSONDecodeError:
-        # Handle JSON decode errors gracefully
         sys.exit(0)
     except Exception:
-        # Exit cleanly on any other error
         sys.exit(0)
+
 
 if __name__ == '__main__':
     main()

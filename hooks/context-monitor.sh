@@ -22,8 +22,7 @@ if [ "$CONTEXT_USAGE" -ge "$THRESHOLD" ]; then
     # Output warning message (will be shown to Claude)
     cat << EOF
 
-⚠️  AUTOPILOT CONTEXT WARNING
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[WARNING] AUTOPILOT CONTEXT WARNING
 
 Current context usage: ${CONTEXT_USAGE} tokens
 Threshold reached: ${THRESHOLD} tokens (75% of limit)
@@ -34,14 +33,13 @@ ACTION REQUIRED:
 3. Run /restore-state to resume task
 
 This warning will only show once per session.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 EOF
 
-    # Voice notification
-    curl -s -X POST http://localhost:8888/notify \
+    # Voice notification via /speak endpoint (agent-aware)
+    curl -s -X POST http://localhost:8888/speak \
       -H "Content-Type: application/json" \
-      -d '{"message":"Context limit approaching - save state recommended","voice_id":"O4lTuRmkE5LyjL2YhMIg","voice_enabled":true}' \
+      -d '{"message":"Context limit approaching - save state recommended","agent":"alex"}' \
       > /dev/null 2>&1 &
   fi
 fi

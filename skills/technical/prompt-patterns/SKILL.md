@@ -3,6 +3,9 @@ name: prompt-patterns
 description: Reusable XML prompt blocks extracted from Anthropic's official Claude 4.6 prompt engineering docs. USE WHEN building system prompts, agent instructions, Claude API calls, or configuring tool-use behavior. Contains 13 composable patterns across 5 categories.
 source: Anthropic Claude 4.6 Prompt Engineering Documentation
 version: 1.0.0
+metadata:
+  last_reviewed: 2026-03-17
+  review_cycle: 90
 ---
 
 # Prompt Patterns — Composable Blocks for Claude 4.6

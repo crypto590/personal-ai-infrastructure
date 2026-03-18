@@ -5,6 +5,9 @@ description: |
   Use when performing Git branching, committing, PR operations, or stack management
   in projects using Graphite (gt). Covers gt commands, worktree rules, conflict
   resolution, commit messages, PR sizing, and stack design patterns.
+metadata:
+  last_reviewed: 2026-03-17
+  review_cycle: 90
 ---
 
 # Graphite Stacked PRs — Monorepo + Worktree Workflow
