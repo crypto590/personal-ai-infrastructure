@@ -363,6 +363,8 @@ After all checks complete (in either mode), produce this report:
 
 ## References
 
+- `context/knowledge/patterns/clean-code-rules.md` — 6 mandatory rules: bounded iteration, small functions, minimal scope, validate boundaries, simple control flow, zero warnings.
+- `context/knowledge/patterns/self-documenting-code.md` — Semantic vs pragmatic functions, model design, drift detection.
 - `ios-swift/quality/checks.md` — iOS-specific quality checks (SwiftLint rules, build verification).
 - `kotlin-android/quality/checks.md` — Android-specific quality checks (ktlint, Detekt, Android Lint).
 - `vercel-react-best-practices` — React and Next.js performance optimization patterns.
