@@ -70,8 +70,13 @@ now_epoch=$(date +%s)
 # Calculate time until 5hr block reset
 resets_at=$(echo "$input" | jq -r '.rate_limits.five_hour.resets_at // empty')
 if [ -n "$resets_at" ]; then
-    clean_ts=$(echo "$resets_at" | sed 's/\.[0-9]*+00:00$//' | sed 's/\.[0-9]*Z$//')
-    reset_epoch=$(date -j -u -f "%Y-%m-%dT%H:%M:%S" "$clean_ts" +%s 2>/dev/null)
+    # Handle both epoch seconds and ISO 8601 formats
+    if echo "$resets_at" | grep -qE '^[0-9]+(\.[0-9]+)?$'; then
+        reset_epoch=$(printf '%.0f' "$resets_at")
+    else
+        clean_ts=$(echo "$resets_at" | sed 's/\.[0-9]*+00:00$//' | sed 's/\.[0-9]*Z$//')
+        reset_epoch=$(date -j -u -f "%Y-%m-%dT%H:%M:%S" "$clean_ts" +%s 2>/dev/null)
+    fi
     if [ -n "$reset_epoch" ] && [ "$reset_epoch" -gt "$now_epoch" ]; then
         remaining=$(( reset_epoch - now_epoch ))
         hours=$(( remaining / 3600 ))
@@ -87,8 +92,13 @@ fi
 # Calculate time until 7-day reset
 weekly_resets_at=$(echo "$input" | jq -r '.rate_limits.seven_day.resets_at // empty')
 if [ -n "$weekly_resets_at" ]; then
-    clean_ts=$(echo "$weekly_resets_at" | sed 's/\.[0-9]*+00:00$//' | sed 's/\.[0-9]*Z$//')
-    weekly_reset_epoch=$(date -j -u -f "%Y-%m-%dT%H:%M:%S" "$clean_ts" +%s 2>/dev/null)
+    # Handle both epoch seconds and ISO 8601 formats
+    if echo "$weekly_resets_at" | grep -qE '^[0-9]+(\.[0-9]+)?$'; then
+        weekly_reset_epoch=$(printf '%.0f' "$weekly_resets_at")
+    else
+        clean_ts=$(echo "$weekly_resets_at" | sed 's/\.[0-9]*+00:00$//' | sed 's/\.[0-9]*Z$//')
+        weekly_reset_epoch=$(date -j -u -f "%Y-%m-%dT%H:%M:%S" "$clean_ts" +%s 2>/dev/null)
+    fi
     if [ -n "$weekly_reset_epoch" ] && [ "$weekly_reset_epoch" -gt "$now_epoch" ]; then
         remaining=$(( weekly_reset_epoch - now_epoch ))
         days=$(( remaining / 86400 ))
