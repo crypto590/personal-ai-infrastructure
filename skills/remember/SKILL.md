@@ -1,5 +1,6 @@
 ---
 name: remember
+effort: low
 description: Save a typed memory episode to Neon Postgres. Use /remember <what> to save decisions, preferences, insights, or facts.
 argument-hint: "<what to remember>"
 metadata:

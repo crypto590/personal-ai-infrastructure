@@ -1,5 +1,6 @@
 ---
 name: forget
+effort: low
 description: Remove a memory episode (append-only supersession). Use /forget <query> to find and deactivate memories.
 argument-hint: "<what to forget | all>"
 metadata:

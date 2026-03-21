@@ -1,5 +1,6 @@
 ---
 name: kotlin-android
+effort: high
 description: >
   Unified Kotlin/Android development skill. Covers MVVM architecture (ViewModels, Repositories, Models, Composables),
   Jetpack Compose patterns, code review (accessibility, concurrency, pattern validation, API research, Material Design 3),

@@ -1,5 +1,6 @@
 ---
 name: plan-eng
+effort: high
 description: |
   Technical engineering planning and review of implementation approach.
   Use before writing code to evaluate architecture, code quality, test coverage,
@@ -103,7 +104,38 @@ Request → Fastify Route Handler
 
 ### Section 2: Code Quality
 
-Evaluate DRY violations, error handling, and naming.
+Evaluate function structure, data modeling, DRY violations, error handling, and naming.
+
+Reference: `context/knowledge/patterns/self-documenting-code.md` for full taxonomy.
+
+#### Function Classification (Semantic vs Pragmatic)
+
+Every function should be clearly one of two types:
+
+**Semantic functions** — building blocks. Minimal, pure, self-describing, no comments needed.
+- Take all inputs as parameters, return all outputs directly
+- No hidden side effects or dependency on external state
+- Named by what they do: `calculate_tax()`, `parse_iso_date()`
+- Unit testable in isolation
+
+**Pragmatic functions** — processes. Compose semantic functions + unique logic for a specific use case.
+- Named by where/when they're used: `handle_signup_webhook()`, `provision_workspace()`
+- Doc comments for unexpected behavior only (not restating the name)
+- Integration tested, expected to change over time
+
+**Flag these anti-patterns:**
+- A semantic-named function with side effects (e.g., `calculate_tax()` that also writes to DB) — this is function drift
+- A pragmatic function reused in 4+ places — the shared logic should be extracted into semantic functions
+- A function that needs comments to explain what it does — either rename it or split it
+
+#### Model Coherence
+
+Data shapes should make wrong states impossible.
+
+- **Field coherence:** Can you look at every field and know it belongs under this model's name? If not, the model is coupling unrelated concepts — split it.
+- **Optional field audit:** 3+ optional fields that are only set in specific contexts → the model is doing too many jobs.
+- **Compose, don't merge:** Independent concepts needed together should be composed (`UserAndWorkspace { user, workspace }`) not flattened.
+- **Brand types on domain IDs:** Bare `string` or `UUID` for domain IDs → use branded/nominal types (`DocumentId`, `TeamId`) to catch cross-domain swaps at compile time.
 
 #### Aggressive DRY Enforcement
 
@@ -119,13 +151,15 @@ Evaluate DRY violations, error handling, and naming.
 - Do function names describe what they do, not how they do it?
 - Are boolean variables named as questions? (`isActive`, `hasPermission`)
 - Do file names match the primary export?
+- Are semantic functions named by operation and pragmatic functions named by context?
 
 #### Complexity Analysis
 
-- Flag functions over 30 lines — consider splitting
+- Flag functions over 40 lines — must be split (see `context/knowledge/patterns/clean-code-rules.md` Rule 2)
 - Flag functions with more than 3 levels of nesting — flatten with early returns
 - Flag functions with more than 4 parameters — use an options object
 - Cyclomatic complexity over 10 — must be simplified
+- **Bounded iteration:** Flag any loop, retry, poll, or pagination without an explicit maximum bound (see Rule 1)
 
 #### Dead Code Detection
 
@@ -136,12 +170,19 @@ Evaluate DRY violations, error handling, and naming.
 
 #### Code Quality Checklist
 
+- [ ] Functions classified as semantic or pragmatic — naming matches type
+- [ ] No semantic functions with hidden side effects (function drift)
+- [ ] Models make wrong states impossible — no incoherent optional fields
+- [ ] Domain IDs use branded types (not bare strings/UUIDs)
 - [ ] No duplicated logic (checked across codebase)
 - [ ] Naming follows existing conventions
-- [ ] No function exceeds 30 lines
+- [ ] No function exceeds 40 lines
 - [ ] No nesting deeper than 3 levels
 - [ ] No function has more than 4 parameters
 - [ ] No dead code or stale comments
+- [ ] Semantic functions have no comments; pragmatic functions document only unexpected behavior
+- [ ] Every loop, retry, poll, and pagination has an explicit maximum bound
+- [ ] All system boundary inputs validated (API responses, user input, env vars)
 
 ---
 

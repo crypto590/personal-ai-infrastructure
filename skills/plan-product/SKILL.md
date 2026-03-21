@@ -1,5 +1,6 @@
 ---
 name: plan-product
+effort: high
 description: |
   Founder/product strategic review of engineering plans and features.
   Use before starting major features to evaluate scope, architecture, error handling,

@@ -1,5 +1,6 @@
 ---
 name: retro
+effort: medium
 description: |
   Git-based engineering retrospective with monorepo awareness. Analyzes commits, PRs,
   LOC, and shipping velocity over configurable time ranges. Includes hotspot analysis,
