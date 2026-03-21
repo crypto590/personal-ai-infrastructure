@@ -4,6 +4,10 @@ description: General-purpose coding agent with quality standards. Use for multi-
 model: sonnet
 maxTurns: 25
 tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch
+skills:
+  - ios-swift
+  - kotlin-android
+  - vercel-react-best-practices
 permissionMode: acceptEdits
 ---
 
