@@ -19,6 +19,7 @@ projects/
 logs/
 # Autopilot runtime state
 autopilot/
+state/
 # Agent transcripts (can be large, may contain sensitive project details)
 agent-output-context/
 # Temporary test/experiment files

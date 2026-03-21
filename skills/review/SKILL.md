@@ -1,13 +1,16 @@
 ---
 name: review
 effort: high
+context: fork
+agent: code-reviewer
+argument-hint: "[path | PR #number]"
 description: |
   Multi-platform code review for Athlead. 2-pass structure: Pass 1 blocks merge (critical),
   Pass 2 improves quality (informational). Auto-fixes safe issues, asks about risky ones.
   Covers TypeScript/Fastify/Next.js, Swift/SwiftUI, and Kotlin/Compose.
   Triggers: code review, review PR, review changes, review code, pre-merge review.
 metadata:
-  last_reviewed: 2026-03-17
+  last_reviewed: 2026-03-20
   review_cycle: 90
 ---
 

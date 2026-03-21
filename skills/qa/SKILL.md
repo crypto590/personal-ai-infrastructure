@@ -1,13 +1,21 @@
 ---
 name: qa
 effort: high
+argument-hint: "[fix | report]"
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Grep
+  - Glob
 description: |
   Multi-platform quality assurance with health scoring. Two modes: fix (find and fix
   with atomic commits) and report (report only). Covers build, types, tests, lint,
   security, performance, accessibility, and contract integrity across web, iOS, Android.
   Triggers: qa, quality check, health check, quality assurance, run qa, qa fix, qa report.
 metadata:
-  last_reviewed: 2026-03-17
+  last_reviewed: 2026-03-20
   review_cycle: 90
 ---
 

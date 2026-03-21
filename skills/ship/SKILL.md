@@ -1,13 +1,21 @@
 ---
 name: ship
 effort: high
+argument-hint: "[commit message]"
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Grep
+  - Glob
 description: |
   Build, version, and ship pipeline. Runs build/lint/test, performs pre-landing review,
   auto-versions, generates changelog, creates logical commits, and opens PR.
   Non-interactive except for merge conflicts, test failures, and major version bumps.
   Triggers: ship, ship it, deploy, release, open PR, create PR, push changes.
 metadata:
-  last_reviewed: 2026-03-17
+  last_reviewed: 2026-03-20
   review_cycle: 90
 ---
 

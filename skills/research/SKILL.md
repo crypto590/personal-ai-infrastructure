@@ -1,9 +1,12 @@
 ---
 name: research
 effort: medium
+context: fork
+agent: research-specialist
+argument-hint: "[URL or topic]"
 description: This skill should be used when analyzing external projects, frameworks, articles, or patterns for competitive intelligence. It applies when the user shares a URL, article, or description of something interesting and wants it documented as a research entry in docs/research/. Triggers on "add this to research", "check this out", sharing URLs of interesting projects, or any request to document competitive analysis for CrewOS.
 metadata:
-  last_reviewed: 2026-03-17
+  last_reviewed: 2026-03-20
   review_cycle: 90
 ---
 

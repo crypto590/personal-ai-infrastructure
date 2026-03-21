@@ -1,6 +1,7 @@
 ---
 name: office-hours
 effort: medium
+argument-hint: "[startup | builder]"
 description: |
   YC-style Office Hours for Athlead pitch preparation. Two modes: Startup mode
   uses six forcing questions (demand reality, status quo, desperate specificity,
@@ -11,7 +12,7 @@ description: |
   Triggers: "office hours", "pitch prep", "help me think through this",
   "is this worth building", "brainstorm this", "investor prep".
 metadata:
-  last_reviewed: 2026-03-19
+  last_reviewed: 2026-03-20
   review_cycle: 90
   based_on: garrytan/gstack office-hours v2.0.0
 ---

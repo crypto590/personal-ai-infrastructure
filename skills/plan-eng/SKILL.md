@@ -1,13 +1,15 @@
 ---
 name: plan-eng
 effort: high
+context: fork
+agent: plan-architect
 description: |
   Technical engineering planning and review of implementation approach.
   Use before writing code to evaluate architecture, code quality, test coverage,
   and performance. Includes scope challenge and aggressive DRY enforcement.
   Triggers: engineering review, technical planning, implementation review, code planning.
 metadata:
-  last_reviewed: 2026-03-17
+  last_reviewed: 2026-03-20
   review_cycle: 90
 ---
 
