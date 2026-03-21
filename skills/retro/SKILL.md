@@ -1,13 +1,17 @@
 ---
 name: retro
 effort: medium
+context: fork
+agent: Explore
+model: haiku
+argument-hint: "[24h | 7d | 14d | 30d]"
 description: |
   Git-based engineering retrospective with monorepo awareness. Analyzes commits, PRs,
   LOC, and shipping velocity over configurable time ranges. Includes hotspot analysis,
   commit classification, and skill staleness detection.
   Triggers: retro, retrospective, what did I ship, weekly review, sprint review.
 metadata:
-  last_reviewed: 2026-03-17
+  last_reviewed: 2026-03-20
   review_cycle: 90
 ---
 

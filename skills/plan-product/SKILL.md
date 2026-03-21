@@ -1,13 +1,14 @@
 ---
 name: plan-product
 effort: high
+argument-hint: "[EXPAND | TRIM]"
 description: |
   Founder/product strategic review of engineering plans and features.
   Use before starting major features to evaluate scope, architecture, error handling,
   security, edge cases, performance, observability, and long-term trajectory.
   Triggers: product review, strategic review, CEO review, scope review, feature planning.
 metadata:
-  last_reviewed: 2026-03-17
+  last_reviewed: 2026-03-20
   review_cycle: 90
 ---
 
