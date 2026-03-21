@@ -121,3 +121,8 @@ Apply these regardless of language:
 - **TypeScript/Fastify/Next.js/Drizzle:** `workflows/typescript.md`
 - **Swift/SwiftUI:** `workflows/swift.md` (orchestrates `ios-swift/review/*`)
 - **Kotlin/Compose:** `workflows/kotlin.md` (orchestrates `kotlin-android/review/*`)
+
+## Code Quality References
+
+- `context/knowledge/patterns/clean-code-rules.md` — 6 mandatory rules (all code must pass). Rules 1 and 2 are referenced in Pass 1 above; read the full file for rules 3-6.
+- `context/knowledge/patterns/self-documenting-code.md` — Semantic vs pragmatic function taxonomy, model drift detection, naming conventions.
