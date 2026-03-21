@@ -70,6 +70,13 @@ Look for these patterns that suggest AI generation:
 - Defensive checks that can't fail given the context
 - Copy-paste patterns with slight variations
 
+## Code Quality References
+
+Read these before reviewing:
+- `context/knowledge/patterns/clean-code-rules.md` — 6 mandatory rules. Flag violations as Critical (rules 1-2) or Warning (rules 3-6).
+- `context/knowledge/patterns/self-documenting-code.md` — Semantic vs pragmatic function taxonomy, model drift detection.
+- `skills/review/SKILL.md` — Full 2-pass review structure with platform-specific routing.
+
 ## Principles
 - Specific over general ("Line 42: null deref when user.email undefined" not "add null checks")
 - Severity first (security > bugs > performance > style)
