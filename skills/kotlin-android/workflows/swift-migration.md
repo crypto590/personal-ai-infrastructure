@@ -523,7 +523,7 @@ MaterialTheme(
 ## Reference Resources
 
 **Kotlin Conventions:**
-`read /Users/coreyyoung/Claude/context/knowledge/languages/kotlin-conventions.md`
+See `skills/kotlin-android/architecture/` for all MVVM patterns and conventions.
 
 **Compose Documentation:**
 - https://developer.android.com/jetpack/compose

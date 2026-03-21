@@ -1,5 +1,6 @@
 ---
 name: document-release
+effort: medium
 description: |
   Post-ship documentation updater. Analyzes diffs to find outdated docs, auto-fixes
   factual corrections, asks about narrative changes. Polishes changelog and ensures

@@ -18,7 +18,6 @@ from datetime import datetime
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from utils.voice import speak_and_notify, AGENT_VOICE_MAP
 
 # Configuration
 LOGS_DIR = Path.home() / '.claude' / 'logs' / 'hooks'
@@ -115,16 +114,7 @@ def main():
         if transcript_path and agent_id:
             save_transcript(agent_name, transcript_path, agent_id)
 
-        # Voice notification in the agent's mapped voice
-        voice_agent = AGENT_VOICE_MAP.get(agent_name, "alex")
-        # Build a short completion message
-        display_name = agent_name.replace("-", " ").replace("_", " ").title()
-        speak_and_notify(
-            f"{display_name} finished",
-            agent=agent_name,
-            title=display_name,
-        )
-        log(f"Voice notification sent for {agent_name} (voice: {voice_agent})", "INFO")
+        log(f"Subagent completed: {agent_name}", "INFO")
 
     except json.JSONDecodeError as e:
         log(f"JSON decode error: {e}", "ERROR")

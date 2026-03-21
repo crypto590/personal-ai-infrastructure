@@ -1,5 +1,6 @@
 ---
 name: qa
+effort: high
 description: |
   Multi-platform quality assurance with health scoring. Two modes: fix (find and fix
   with atomic commits) and report (report only). Covers build, types, tests, lint,
@@ -77,16 +78,22 @@ Each category is scored 0–100. The overall score is a weighted sum.
 - Run `turbo run check-types` (TypeScript strict mode).
 - Scan for `any` type usage — each explicit `any` deducts 1 point (up to 30 points).
 - Verify Zod schemas cover all external data inputs (API responses, form data, env vars).
+- **Brand type audit:** Scan for domain IDs passed as bare `string` or `number` where branded/nominal types would prevent cross-domain bugs (e.g., `userId: string` vs `userId: UserId`). Deduct 1 point per unbranded domain ID in function signatures (up to 10 points).
+- **Model coherence:** Flag models with 3+ optional fields only set in specific contexts — signal to split into distinct types. Flag models where field names don't cohere around the model name (e.g., `phone_number` on `BillingAddress`). Deduct 2 points per incoherent model (up to 10 points).
 
 **Scoring:**
-- 100: Zero TypeScript errors, minimal `any` usage, Zod coverage on external inputs.
+- 100: Zero TypeScript errors, minimal `any` usage, Zod coverage on external inputs, branded domain IDs, coherent models.
 - Deduct 10 points per type error.
 - Deduct 1 point per `any` usage.
 - Deduct 5 points per unvalidated external input.
+- Deduct 1 point per unbranded domain ID in function signatures (up to 10).
+- Deduct 2 points per incoherent model (up to 10).
 
 **Fix mode:**
 - Replace `any` with proper types where inference is possible.
 - Add Zod schemas for unvalidated external inputs.
+- Add branded type definitions for domain IDs where missing (report only — don't auto-fix existing call sites).
+- Report incoherent models with split recommendation (report only — structural changes require human decision).
 - Commit: `fix(qa): [type-safety] replace any with proper types in <file>`
 
 ---

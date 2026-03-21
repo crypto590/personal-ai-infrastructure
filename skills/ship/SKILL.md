@@ -1,5 +1,6 @@
 ---
 name: ship
+effort: high
 description: |
   Build, version, and ship pipeline. Runs build/lint/test, performs pre-landing review,
   auto-versions, generates changelog, creates logical commits, and opens PR.

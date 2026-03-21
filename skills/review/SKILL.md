@@ -1,5 +1,6 @@
 ---
 name: review
+effort: high
 description: |
   Multi-platform code review for Athlead. 2-pass structure: Pass 1 blocks merge (critical),
   Pass 2 improves quality (informational). Auto-fixes safe issues, asks about risky ones.
@@ -30,6 +31,7 @@ These issues **must** be resolved before merging:
 3. **Race conditions** — concurrent state mutation without synchronization, TOCTOU bugs, missing locks/transactions
 4. **Contract violations** — Zod schema drift from API spec, response type mismatches, breaking API changes without versioning
 5. **Crash-path bugs** — force unwrap (`!`), unhandled null/undefined, missing error cases in switch/when, uncaught exceptions at boundaries
+6. **Unbounded iteration** — any loop, retry, poll, or pagination without an explicit maximum (see `context/knowledge/patterns/clean-code-rules.md` Rule 1)
 
 ### Pass 2 — INFORMATIONAL (improves quality, does not block)
 
@@ -38,6 +40,11 @@ These issues **must** be resolved before merging:
 3. **Test coverage gaps** — untested edge cases, missing error path tests, no integration tests for new endpoints
 4. **Accessibility gaps** — missing labels, insufficient contrast, touch targets below minimum, missing keyboard navigation
 5. **DRY violations** — duplicated logic that should be extracted, copy-pasted code with minor variations
+6. **Function drift** — semantic functions (named by what they do) that have accumulated side effects, hidden state dependencies, or need mocks to test. These should be split: pure logic stays semantic, side effects move to a pragmatic wrapper.
+7. **Model drift** — models with 3+ optional fields only set in specific contexts, models whose name no longer describes all their fields, or fields that are null in most records. Signal to split the model into distinct concepts and compose when both are needed.
+8. **Comment hygiene** — semantic functions should need no comments (rename or split if they do). Pragmatic functions should document only unexpected behavior, not restate the function name or describe obvious parameters. Flag stale doc comments that no longer match the implementation.
+9. **Function size** — functions exceeding 40 lines of logic should be split (see `context/knowledge/patterns/clean-code-rules.md` Rule 2)
+10. **Nesting depth** — code nested more than 3 levels deep should be flattened with early returns or extraction (Rule 5)
 
 ## Fix-First Heuristic
 

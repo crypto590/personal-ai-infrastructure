@@ -1,5 +1,6 @@
 ---
 name: ios-swift
+effort: high
 description: >
   Unified iOS/Swift development skill. Covers MVC architecture (Controllers, Services, Models, Views),
   SwiftUI patterns, code review (accessibility, Liquid Glass, concurrency, pattern validation, API research),

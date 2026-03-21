@@ -1,5 +1,6 @@
 ---
 name: graphite
+effort: medium
 description: |
   Graphite stacked PRs workflow for monorepo and Git worktree projects.
   Use when performing Git branching, committing, PR operations, or stack management

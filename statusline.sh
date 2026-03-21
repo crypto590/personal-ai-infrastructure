@@ -2,6 +2,7 @@
 
 # Claude Code Status Line Script
 # Receives JSON input via stdin with session context
+# Uses native rate_limits field (v2.1.80+) — no API calls needed
 
 # Read JSON input from stdin
 input=$(cat)
@@ -58,92 +59,44 @@ else
     voice_icon="🔇"
 fi
 
-# === Anthropic Usage API (cached 3 min) ===
-CACHE_DIR="$HOME/.cache/claude-statusline"
-CACHE_FILE="$CACHE_DIR/usage.json"
-CACHE_MAX_AGE=180
-
-get_usage_data() {
-    # Return cached data if fresh
-    if [ -f "$CACHE_FILE" ]; then
-        local now=$(date +%s)
-        local mod=$(stat -f %m "$CACHE_FILE" 2>/dev/null || echo "0")
-        local age=$(( now - mod ))
-        if [ "$age" -lt "$CACHE_MAX_AGE" ]; then
-            cat "$CACHE_FILE"
-            return 0
-        fi
-    fi
-
-    # Get OAuth token from macOS Keychain
-    local token
-    token=$(security find-generic-password -s "Claude Code-credentials" -a "$(whoami)" -w 2>/dev/null | jq -r '.claudeAiOauth.accessToken // empty' 2>/dev/null)
-    if [ -z "$token" ]; then
-        [ -f "$CACHE_FILE" ] && cat "$CACHE_FILE"
-        return 1
-    fi
-
-    # Fetch usage data
-    local response
-    response=$(curl -s --max-time 3 \
-        -H "Authorization: Bearer $token" \
-        -H "anthropic-beta: oauth-2025-04-20" \
-        "https://api.anthropic.com/api/oauth/usage" 2>/dev/null)
-
-    if [ $? -eq 0 ] && echo "$response" | jq -e '.five_hour' > /dev/null 2>&1; then
-        mkdir -p "$CACHE_DIR"
-        echo "$response" > "$CACHE_FILE"
-        echo "$response"
-        return 0
-    fi
-
-    [ -f "$CACHE_FILE" ] && cat "$CACHE_FILE"
-    return 1
-}
-
-usage_json=$(get_usage_data)
-five_hr_pct=""
-seven_day_pct=""
+# === Rate Limits (native from v2.1.80 rate_limits field) ===
+five_hr_pct=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty')
+seven_day_pct=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // empty')
 reset_time=""
 weekly_reset_time=""
 
-if [ -n "$usage_json" ]; then
-    five_hr_pct=$(echo "$usage_json" | jq -r '.five_hour.utilization // empty')
-    seven_day_pct=$(echo "$usage_json" | jq -r '.seven_day.utilization // empty')
-    resets_at=$(echo "$usage_json" | jq -r '.five_hour.resets_at // empty')
+now_epoch=$(date +%s)
 
-    now_epoch=$(date +%s)
-
-    # Calculate time until 5hr block reset
-    if [ -n "$resets_at" ]; then
-        clean_ts=$(echo "$resets_at" | sed 's/\.[0-9]*+00:00$//' | sed 's/\.[0-9]*Z$//')
-        reset_epoch=$(date -j -u -f "%Y-%m-%dT%H:%M:%S" "$clean_ts" +%s 2>/dev/null)
-        if [ -n "$reset_epoch" ] && [ "$reset_epoch" -gt "$now_epoch" ]; then
-            remaining=$(( reset_epoch - now_epoch ))
-            hours=$(( remaining / 3600 ))
-            minutes=$(( (remaining % 3600) / 60 ))
-            if [ "$hours" -gt 0 ]; then
-                reset_time="${hours}h${minutes}m"
-            else
-                reset_time="${minutes}m"
-            fi
+# Calculate time until 5hr block reset
+resets_at=$(echo "$input" | jq -r '.rate_limits.five_hour.resets_at // empty')
+if [ -n "$resets_at" ]; then
+    clean_ts=$(echo "$resets_at" | sed 's/\.[0-9]*+00:00$//' | sed 's/\.[0-9]*Z$//')
+    reset_epoch=$(date -j -u -f "%Y-%m-%dT%H:%M:%S" "$clean_ts" +%s 2>/dev/null)
+    if [ -n "$reset_epoch" ] && [ "$reset_epoch" -gt "$now_epoch" ]; then
+        remaining=$(( reset_epoch - now_epoch ))
+        hours=$(( remaining / 3600 ))
+        minutes=$(( (remaining % 3600) / 60 ))
+        if [ "$hours" -gt 0 ]; then
+            reset_time="${hours}h${minutes}m"
+        else
+            reset_time="${minutes}m"
         fi
     fi
+fi
 
-    # Calculate time until 7-day reset
-    weekly_resets_at=$(echo "$usage_json" | jq -r '.seven_day.resets_at // empty')
-    if [ -n "$weekly_resets_at" ]; then
-        clean_ts=$(echo "$weekly_resets_at" | sed 's/\.[0-9]*+00:00$//' | sed 's/\.[0-9]*Z$//')
-        weekly_reset_epoch=$(date -j -u -f "%Y-%m-%dT%H:%M:%S" "$clean_ts" +%s 2>/dev/null)
-        if [ -n "$weekly_reset_epoch" ] && [ "$weekly_reset_epoch" -gt "$now_epoch" ]; then
-            remaining=$(( weekly_reset_epoch - now_epoch ))
-            days=$(( remaining / 86400 ))
-            hours=$(( (remaining % 86400) / 3600 ))
-            if [ "$days" -gt 0 ]; then
-                weekly_reset_time="${days}d${hours}h"
-            else
-                weekly_reset_time="${hours}h"
-            fi
+# Calculate time until 7-day reset
+weekly_resets_at=$(echo "$input" | jq -r '.rate_limits.seven_day.resets_at // empty')
+if [ -n "$weekly_resets_at" ]; then
+    clean_ts=$(echo "$weekly_resets_at" | sed 's/\.[0-9]*+00:00$//' | sed 's/\.[0-9]*Z$//')
+    weekly_reset_epoch=$(date -j -u -f "%Y-%m-%dT%H:%M:%S" "$clean_ts" +%s 2>/dev/null)
+    if [ -n "$weekly_reset_epoch" ] && [ "$weekly_reset_epoch" -gt "$now_epoch" ]; then
+        remaining=$(( weekly_reset_epoch - now_epoch ))
+        days=$(( remaining / 86400 ))
+        hours=$(( (remaining % 86400) / 3600 ))
+        if [ "$days" -gt 0 ]; then
+            weekly_reset_time="${days}d${hours}h"
+        else
+            weekly_reset_time="${hours}h"
         fi
     fi
 fi

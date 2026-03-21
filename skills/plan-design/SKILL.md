@@ -1,5 +1,6 @@
 ---
 name: plan-design
+effort: high
 description: |
   Multi-platform design audit across web (React/Tailwind 4), iOS (Liquid Glass/SwiftUI),
   and Android (Material Design 3). 80-item checklist across 10 categories including

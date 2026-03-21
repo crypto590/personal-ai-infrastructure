@@ -1,5 +1,6 @@
 ---
 name: memory
+effort: low
 description: Query the unified memory system. Subcommands — search, product, decisions, preferences, all, stats, add-product.
 argument-hint: "[search <query> | product <name> | decisions | preferences | all | stats | add-product <name> <path>]"
 metadata:

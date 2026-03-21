@@ -1,5 +1,6 @@
 ---
 name: email
+effort: high
 description: |
   Unified email skill covering deliverability, templates, and sending.
   Routes to sub-files for SPF/DKIM/DMARC, React Email components,
