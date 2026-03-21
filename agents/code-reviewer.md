@@ -3,7 +3,9 @@ name: code-reviewer
 description: Pre-PR review following the PR Contract. Checks code quality, security, AI patterns, risk level, and identifies areas needing human review focus.
 model: sonnet
 maxTurns: 15
-tools: Read, Glob, Grep, Bash
+tools: Read, Glob, Grep, Bash, Write, Edit
+skills:
+  - review
 permissionMode: default
 memory: user
 ---
