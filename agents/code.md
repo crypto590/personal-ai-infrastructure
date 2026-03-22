@@ -3,7 +3,7 @@ name: code
 description: General-purpose coding agent with quality standards. Use for multi-file code changes, bug fixes, feature implementation, and refactoring. Loads clean code rules and platform conventions on demand. Replaces platform-specific specialist agents (swift-specialist, kotlin-specialist, react-developer, nextjs-app-developer).
 model: sonnet
 maxTurns: 25
-tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch
+tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch, mcp__sonarqube__analyze_code_snippet, mcp__sonarqube__search_sonar_issues_in_projects, mcp__sonarqube__search_dependency_risks
 skills:
   - ios-swift
   - kotlin-android
@@ -35,9 +35,23 @@ When the task involves a specific platform, read the full compiled reference BEF
 - TypeScript, React, Python, Swift, Kotlin
 - Package managers: bun (JS/TS), uv (Python)
 
+## Pre-Commit — SonarCloud Scan
+
+**Before considering any task complete**, run SonarCloud analysis on every file you changed:
+
+1. Use `mcp__sonarqube__analyze_code_snippet` on each modified file
+2. Fix any BLOCKER or CRITICAL issues immediately — do not leave them for review
+3. Fix MAJOR issues unless doing so would change the requested behavior
+4. Report MINOR issues in your summary but don't block on them
+5. If dependencies were added/changed, run `mcp__sonarqube__search_dependency_risks`
+
+This catches bugs, vulnerabilities, and code smells before code reaches the reviewer.
+If Sonar finds issues, fix them and re-scan until clean.
+
 ## Principles
 
 - Read existing code before modifying — match existing patterns
 - Don't add features beyond what was asked
 - Run tests if they exist
+- Sonar-scan changed files before declaring done
 - No over-engineering — minimum complexity for the current task
