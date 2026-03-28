@@ -1,13 +1,7 @@
 ---
 name: kotlin-android
 effort: high
-description: >
-  Unified Kotlin/Android development skill. Covers MVVM architecture (ViewModels, Repositories, Models, Composables),
-  Jetpack Compose patterns, code review (accessibility, concurrency, pattern validation, API research, Material Design 3),
-  quality checks (ktlint, Detekt, Android Lint, JaCoCo), and Play Store distribution.
-  Trigger words: Android, Kotlin, Jetpack Compose, MVVM, ViewModel, Hilt, Material Design 3, TalkBack, coroutines,
-  Flow, StateFlow, Navigation Compose, Room, Retrofit, Hilt, dependency injection, code review, pattern validation,
-  Play Store, distribution, Android accessibility, ktlint, Detekt.
+description: "Unified Kotlin/Android/Compose development. MVVM architecture, code review, ktlint, Detekt, accessibility, and Play Store distribution."
 metadata:
   last_reviewed: 2026-03-17
   review_cycle: 90

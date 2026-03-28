@@ -3,11 +3,7 @@ name: plan-design
 effort: high
 context: fork
 model: sonnet
-description: |
-  Multi-platform design audit across web (React/Tailwind 4), iOS (Liquid Glass/SwiftUI),
-  and Android (Material Design 3). 80-item checklist across 10 categories including
-  AI slop detection. Report-only mode — never modifies code.
-  Triggers: design review, design audit, UI review, UX review, visual review, accessibility audit.
+description: "Multi-platform design audit: web (React/Tailwind), iOS (Liquid Glass), Android (Material 3). 80-item checklist with AI slop detection. Report-only."
 metadata:
   last_reviewed: 2026-03-20
   review_cycle: 90

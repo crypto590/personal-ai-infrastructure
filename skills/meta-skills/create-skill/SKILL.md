@@ -1,6 +1,6 @@
 ---
 name: create-skill
-description: Guide for creating new skills in Alex's personal AI infrastructure. Use when user wants to create, update, or structure a new skill that extends capabilities with specialized knowledge, workflows, or tool integrations. Follows both Anthropic skill standards and PAI-specific patterns.
+description: "Create, update, or structure PAI skills with specialized knowledge, workflows, or tool integrations. Follows Anthropic and PAI patterns."
 metadata:
   last_reviewed: 2026-03-17
   review_cycle: 90

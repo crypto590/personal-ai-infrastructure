@@ -4,11 +4,7 @@ effort: medium
 context: fork
 model: sonnet
 argument-hint: "[version or PR]"
-description: |
-  Post-ship documentation updater. Analyzes diffs to find outdated docs, auto-fixes
-  factual corrections, asks about narrative changes. Polishes changelog and ensures
-  cross-doc consistency.
-  Triggers: document release, update docs, post-release docs, release notes, update documentation.
+description: "Post-ship documentation updater. Analyzes diffs for outdated docs, auto-fixes factual corrections, polishes changelog, ensures cross-doc consistency."
 metadata:
   last_reviewed: 2026-03-20
   review_cycle: 90

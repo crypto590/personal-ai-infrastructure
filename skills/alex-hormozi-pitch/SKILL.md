@@ -66,4 +66,4 @@ Value = (Dream Outcome × Perceived Likelihood) / (Time Delay × Effort & Sacrif
 
 ## Full Workflow Reference
 
-For complete step-by-step instructions: `read ${PAI_DIR}/skills/business/alex-hormozi-pitch/workflows/create-pitch.md`
+For complete step-by-step instructions: `read ~/.claude/skills/alex-hormozi-pitch/workflows/create-pitch.md`

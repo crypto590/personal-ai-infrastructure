@@ -5,11 +5,7 @@ context: fork
 agent: Explore
 model: haiku
 argument-hint: "[24h | 7d | 14d | 30d]"
-description: |
-  Git-based engineering retrospective with monorepo awareness. Analyzes commits, PRs,
-  LOC, and shipping velocity over configurable time ranges. Includes hotspot analysis,
-  commit classification, and skill staleness detection.
-  Triggers: retro, retrospective, what did I ship, weekly review, sprint review.
+description: "Git-based engineering retrospective. Analyzes commits, PRs, LOC, velocity over configurable time ranges. Hotspot analysis and commit classification."
 metadata:
   last_reviewed: 2026-03-20
   review_cycle: 90

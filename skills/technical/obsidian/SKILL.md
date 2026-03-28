@@ -1,6 +1,6 @@
 ---
 name: obsidian
-description: Unified Obsidian vault interaction via CLI and content creation. Read/write/search notes, manage tasks, create daily entries, work with Bases databases and JSON Canvas. Default vault "The_Hub". USE WHEN interacting with Obsidian vault, writing notes, searching knowledge base, managing tasks, creating canvas files, working with Bases, or logging session outcomes.
+description: "Obsidian vault CLI interaction. Read/write/search notes, manage tasks, daily entries, Bases databases, JSON Canvas. Default vault: The_Hub."
 metadata:
   last_reviewed: 2026-03-17
   review_cycle: 90
@@ -181,9 +181,9 @@ obsidian vault=The_Hub tasks status=todo
 | Session Logging | Appending decisions/outcomes to vault | `read /Users/coreyyoung/.claude/skills/technical/obsidian/workflows/session-logging.md` |
 | Knowledge Retrieval | Searching vault before starting work | `read /Users/coreyyoung/.claude/skills/technical/obsidian/workflows/knowledge-retrieval.md` |
 | Task Management | Managing Obsidian tasks from sessions | `read /Users/coreyyoung/.claude/skills/technical/obsidian/workflows/task-management.md` |
-| Obsidian Markdown | Writing Obsidian-flavored markdown | `read /Users/coreyyoung/.claude/skills/technical/obsidian/obsidian-markdown/SKILL.md` |
-| Obsidian Bases | Creating .base database files | `read /Users/coreyyoung/.claude/skills/technical/obsidian/obsidian-bases/SKILL.md` |
-| JSON Canvas | Creating .canvas visual files | `read /Users/coreyyoung/.claude/skills/technical/obsidian/json-canvas/SKILL.md` |
+| Obsidian Markdown | Writing Obsidian-flavored markdown | `read /Users/coreyyoung/.claude/skills/technical/obsidian/workflows/obsidian-markdown.md` |
+| Obsidian Bases | Creating .base database files | `read /Users/coreyyoung/.claude/skills/technical/obsidian/workflows/obsidian-bases.md` |
+| JSON Canvas | Creating .canvas visual files | `read /Users/coreyyoung/.claude/skills/technical/obsidian/workflows/json-canvas.md` |
 
 ## Key Principles
 

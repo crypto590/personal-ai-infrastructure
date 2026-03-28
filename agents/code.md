@@ -1,7 +1,7 @@
 ---
 name: code
-description: General-purpose coding agent with quality standards. Use for multi-file code changes, bug fixes, feature implementation, and refactoring. Loads clean code rules and platform conventions on demand. Replaces platform-specific specialist agents (swift-specialist, kotlin-specialist, react-developer, nextjs-app-developer).
-model: sonnet
+description: General-purpose coding agent. Multi-file code changes, bug fixes, features, and refactoring. Loads clean code rules and platform conventions on demand.
+model: inherit
 maxTurns: 25
 tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch
 skills:

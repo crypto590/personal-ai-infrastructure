@@ -2,11 +2,7 @@
 name: plan-product
 effort: high
 argument-hint: "[EXPAND | TRIM]"
-description: |
-  Founder/product strategic review of engineering plans and features.
-  Use before starting major features to evaluate scope, architecture, error handling,
-  security, edge cases, performance, observability, and long-term trajectory.
-  Triggers: product review, strategic review, CEO review, scope review, feature planning.
+description: "Founder/product strategic review of engineering plans. Evaluates scope, architecture, security, edge cases, performance, and long-term trajectory."
 metadata:
   last_reviewed: 2026-03-20
   review_cycle: 90
@@ -144,6 +140,7 @@ Apply these to every section of the review:
 - Rollback strategy: how do we undo this if it breaks?
 - Canary/gradual rollout: can we roll this out to a subset of users first?
 - Documentation: is the runbook updated?
+- **PR layering:** Does this feature cross architectural layers (DB + API + UI)? If so and it exceeds ~200 lines, plan for a layer-based Graphite stack: DB/schema → API/services → UI/app. Each layer ships as its own PR, reviewed and merged in order. Small features (< ~200 lines) can ship as a single PR.
 
 ### 10. Long-Term Trajectory
 

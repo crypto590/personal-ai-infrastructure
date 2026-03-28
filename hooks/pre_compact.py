@@ -21,28 +21,13 @@ except ImportError:
 
 
 def log_pre_compact(input_data):
-    """Log pre-compact event to logs directory."""
-    # Ensure logs directory exists (central location)
+    """Log pre-compact event to logs directory (append-only JSONL)."""
     log_dir = Path.home() / '.claude' / 'logs'
     log_dir.mkdir(parents=True, exist_ok=True)
-    log_file = log_dir / 'pre_compact.json'
+    log_file = log_dir / 'pre_compact.jsonl'
 
-    # Read existing log data or initialize empty list
-    if log_file.exists():
-        with open(log_file, 'r') as f:
-            try:
-                log_data = json.load(f)
-            except (json.JSONDecodeError, ValueError):
-                log_data = []
-    else:
-        log_data = []
-
-    # Append the entire input data
-    log_data.append(input_data)
-
-    # Write back to file with formatting
-    with open(log_file, 'w') as f:
-        json.dump(log_data, f, indent=2)
+    with open(log_file, 'a') as f:
+        f.write(json.dumps(input_data) + '\n')
 
 
 def backup_transcript(transcript_path, trigger):

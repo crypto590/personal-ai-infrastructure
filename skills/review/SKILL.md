@@ -4,11 +4,7 @@ effort: high
 context: fork
 agent: code-reviewer
 argument-hint: "[path | PR #number]"
-description: |
-  Multi-platform code review for Athlead. 2-pass structure: Pass 1 blocks merge (critical),
-  Pass 2 improves quality (informational). Auto-fixes safe issues, asks about risky ones.
-  Covers TypeScript/Fastify/Next.js, Swift/SwiftUI, and Kotlin/Compose.
-  Triggers: code review, review PR, review changes, review code, pre-merge review.
+description: "Multi-platform code review. 2-pass: Pass 1 blocks merge (critical), Pass 2 improves quality. Covers TypeScript, Swift/SwiftUI, Kotlin/Compose."
 metadata:
   last_reviewed: 2026-03-20
   review_cycle: 90
@@ -48,6 +44,7 @@ These issues **must** be resolved before merging:
 8. **Comment hygiene** — semantic functions should need no comments (rename or split if they do). Pragmatic functions should document only unexpected behavior, not restate the function name or describe obvious parameters. Flag stale doc comments that no longer match the implementation.
 9. **Function size** — functions exceeding 40 lines of logic should be split (see `context/knowledge/patterns/clean-code-rules.md` Rule 2)
 10. **Nesting depth** — code nested more than 3 levels deep should be flattened with early returns or extraction (Rule 5)
+11. **Layer mixing** — a single PR that combines DB schema/migrations, API routes/services, AND UI components should be split into a layer-based Graphite stack (DB → API → UI). Threshold: flag when the PR exceeds ~200 lines and touches 3+ files across multiple layers. Small cross-layer changes (< ~200 lines) are acceptable as a single PR.
 
 ## Fix-First Heuristic
 

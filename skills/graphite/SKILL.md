@@ -1,11 +1,7 @@
 ---
 name: graphite
 effort: medium
-description: |
-  Graphite stacked PRs workflow for monorepo and Git worktree projects.
-  Use when performing Git branching, committing, PR operations, or stack management
-  in projects using Graphite (gt). Covers gt commands, worktree rules, conflict
-  resolution, commit messages, PR sizing, and stack design patterns.
+description: "Graphite stacked PRs for monorepo/worktree projects. Covers gt commands, conflict resolution, commit messages, PR sizing, and stack patterns."
 metadata:
   last_reviewed: 2026-03-17
   review_cycle: 90
@@ -136,7 +132,37 @@ gt create -m "fix"
 
 ### Target: ≤ 400 lines per stack entry
 
-Break work into logical, reviewable units:
+Break work into logical, reviewable units.
+
+### When to Stack vs. Single PR
+
+- **< ~200 lines total** → single PR is fine, even if cross-layer
+- **> ~200 lines or 3+ files per layer** → stack by layer (see below)
+- **Infra/config changes** (CI, env, packages) → always their own PR at the bottom of the stack
+
+### Layer-Based Stacking (Default for Large Features)
+
+For any feature that crosses architectural layers, **always stack by layer in this order:**
+
+```
+Stack: feature/athlete-profiles
+  ├── 1. [shared] DB schema + migrations (~100 lines)
+  ├── 2. [shared] API routes + services (~200 lines)
+  ├── 3. [web] UI components + pages (~300 lines)
+  └── 4. [android] Compose screens (~250 lines)
+```
+
+**Layer order (bottom to top of stack):**
+1. **Infra/config** — CI, build config, env, package deps
+2. **DB/schema** — Drizzle schema changes, migrations, seed data
+3. **API/services** — Route handlers, service layer, middleware, Zod schemas
+4. **UI/app** — Frontend components, pages, styles (one PR per platform if multi-platform)
+
+**Why this order:** Each layer depends on the one below it. Schema must land before API can use it, API must land before UI can call it. This maps naturally to Graphite's dependency chain.
+
+### Feature-Based Stacking (Within a Single Layer)
+
+When a single layer is large enough to need its own stack, split by feature concern:
 
 ```
 # Good stack — each entry is one concern

@@ -85,40 +85,58 @@ def detect_signal(prompt: str):
     return None, ""
 
 
-def classify_prompt(prompt: str, cwd: str) -> str:
-    """Classify prompt into a routing tier."""
+def classify_prompt(prompt: str, cwd: str) -> tuple[str, str]:
+    """Classify prompt into a routing tier. Returns (tier, product).
+
+    Product detection is deferred — only hits DB when tier needs it.
+    """
     p = prompt.strip().lower()
     words = p.split()
 
     if not words:
-        return "greeting"
+        return "greeting", ""
 
     # Tier 0: Greeting
     first_word = words[0]
     if p in GREETINGS or first_word in {"hey", "hello", "hi", "sup", "yo", "heya", "howdy"}:
         if len(words) <= 5:
-            return "greeting"
+            return "greeting", ""
 
     # Tier 1: Skill invocation (starts with /)
     if p.startswith("/"):
-        return "skill"
+        return "skill", ""
 
     # Tier 4: Memory query
     if any(kw in p for kw in MEMORY_KEYWORDS):
-        return "memory"
+        return "memory", _detect_product_cached(cwd)
 
     # Tier 3: Project-specific (working in known project dir)
+    product = _detect_product_cached(cwd)
+    if product in ("athlead", "crewos"):
+        return "project", product
+
+    # Tier 2: Standard
+    return "standard", ""
+
+
+def _detect_product_cached(cwd: str) -> str:
+    """Detect product from cwd, with simple path-based fast path before DB."""
+    # Fast path: check known project directories without DB
+    cwd_lower = cwd.lower()
+    if "athlead" in cwd_lower:
+        return "athlead"
+    if "crewos" in cwd_lower:
+        return "crewos"
+    if ".claude" in cwd_lower:
+        return "pai"
+
+    # Slow path: DB lookup
     try:
         from memory_db import detect_product, connect
         with connect() as conn:
-            product = detect_product(cwd, conn)
-        if product in ("athlead", "crewos"):
-            return "project"
+            return detect_product(cwd, conn)
     except Exception:
-        pass
-
-    # Tier 2: Standard
-    return "standard"
+        return ""
 
 
 def get_project_memory(cwd: str, budget_chars: int = 600) -> str:
@@ -197,7 +215,7 @@ def main():
             pass
 
     # --- Tier-based context injection ---
-    tier = classify_prompt(prompt, cwd)
+    tier, product = classify_prompt(prompt, cwd)
     output_parts = []
 
     if tier == "greeting":

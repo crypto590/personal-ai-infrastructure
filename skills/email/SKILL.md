@@ -1,13 +1,7 @@
 ---
 name: email
 effort: high
-description: |
-  Unified email skill covering deliverability, templates, and sending.
-  Routes to sub-files for SPF/DKIM/DMARC, React Email components,
-  Resend platform API, webhooks, retry logic, compliance (CAN-SPAM/GDPR/CASL),
-  transactional vs marketing email, double opt-in, and list management.
-  Triggers: email features, spam issues, SPF/DKIM/DMARC, email templates,
-  React Email, Resend, compliance, webhooks, retry logic, inbound email.
+description: "Unified email: deliverability (SPF/DKIM/DMARC), React Email templates, Resend API, compliance (CAN-SPAM/GDPR/CASL), and list management."
 metadata:
   last_reviewed: 2026-03-17
   review_cycle: 90

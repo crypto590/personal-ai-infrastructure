@@ -31,21 +31,32 @@ def log(message: str, level: str = "INFO"):
         f.write(log_entry)
 
 def load_pai_context() -> str:
-    """Load PAI CORE context"""
+    """Load PAI CORE context — body only (skip frontmatter to save tokens)."""
     try:
         if not CORE_SKILL.exists():
-            log(f"CORE skill not found at {CORE_SKILL}", "ERROR")
-            return "⚠️ PAI CORE context not available"
+            # Try lowercase fallback
+            alt = CORE_SKILL.parent.parent / 'core' / 'SKILL.md'
+            if alt.exists():
+                content = alt.read_text()
+            else:
+                log(f"CORE skill not found at {CORE_SKILL}", "ERROR")
+                return ""
+        else:
+            content = CORE_SKILL.read_text()
 
-        with open(CORE_SKILL, 'r') as f:
-            content = f.read()
+        # Extract body after frontmatter (skip YAML metadata)
+        parts = content.split("---", 2)
+        if len(parts) >= 3:
+            body = parts[2].strip()
+        else:
+            body = content
 
-        log(f"Loaded CORE skill ({len(content)} chars)", "INFO")
-        return content
+        log(f"Loaded CORE body ({len(body)} chars)", "INFO")
+        return body
 
     except Exception as e:
         log(f"Error loading CORE skill: {e}", "ERROR")
-        return f"⚠️ Error loading PAI context: {e}"
+        return ""
 
 def get_current_date() -> str:
     """Get current date/time"""
