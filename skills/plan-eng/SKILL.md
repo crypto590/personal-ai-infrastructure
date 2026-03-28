@@ -3,11 +3,7 @@ name: plan-eng
 effort: high
 context: fork
 agent: plan-architect
-description: |
-  Technical engineering planning and review of implementation approach.
-  Use before writing code to evaluate architecture, code quality, test coverage,
-  and performance. Includes scope challenge and aggressive DRY enforcement.
-  Triggers: engineering review, technical planning, implementation review, code planning.
+description: "Technical engineering planning before writing code. Evaluates architecture, code quality, test coverage, performance, with scope challenge and DRY enforcement."
 metadata:
   last_reviewed: 2026-03-20
   review_cycle: 90
@@ -334,13 +330,40 @@ Consult these skills for platform-specific planning:
 
 ---
 
+## PR Stack Planning
+
+After the scope challenge and before diving into sections, determine the PR strategy:
+
+### Threshold
+- **< ~200 lines total** → single PR, even if cross-layer
+- **> ~200 lines or 3+ files per layer** → layer-based Graphite stack
+
+### Layer-Based Stack Template
+
+When stacking is warranted, include this in the output:
+
+| # | Branch | Layer | Key Files | ~Lines |
+|---|--------|-------|-----------|--------|
+| 1 | feature/<name>-infra | Infra/config | CI, env, packages | ~X |
+| 2 | feature/<name>-schema | DB/schema | Drizzle schema, migrations | ~X |
+| 3 | feature/<name>-api | API/services | Routes, handlers, Zod schemas | ~X |
+| 4 | feature/<name>-web | UI/app (web) | Components, pages | ~X |
+| 5 | feature/<name>-android | UI/app (android) | Compose screens | ~X |
+
+**Layer order matters:** Each layer depends on the one below it. Schema must land before API, API before UI. Use Graphite (`gt create`, `gt submit`) for stacked PRs; fall back to `gh` if unavailable.
+
+Skip layers that don't apply. Each entry should be ≤ 400 lines of meaningful diff.
+
+---
+
 ## Output Format
 
 After completing the review, produce:
 
 1. **Scope assessment** (files touched, new abstractions, smell test result)
-2. **Findings per section** (numbered, with severity: blocker/warning/note)
-3. **Code path diagrams** (ASCII, with test coverage status)
-4. **Performance estimates** (latency table)
-5. **Action items** (prioritized: fix before coding / fix during coding / fix later)
-6. **Deferred items** (for TODOS.md with context)
+2. **PR stack recommendation** (single PR or layer-based stack with branch names and line estimates)
+3. **Findings per section** (numbered, with severity: blocker/warning/note)
+4. **Code path diagrams** (ASCII, with test coverage status)
+5. **Performance estimates** (latency table)
+6. **Action items** (prioritized: fix before coding / fix during coding / fix later)
+7. **Deferred items** (for TODOS.md with context)

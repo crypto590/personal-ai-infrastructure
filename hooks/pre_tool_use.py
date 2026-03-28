@@ -1,18 +1,21 @@
 #!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">=3.8"
-# dependencies = ["pyyaml"]
+# dependencies = []
 # ///
 
 """
 PreToolUse Security Hook
 
-YAML-configurable security patterns with three tiers:
+Matcher: Bash|Write|Edit|Read (only fires for file/command tools)
+
+Three tiers:
   blocked  -- exit(2), tool call rejected
   confirm  -- exit(1), user must approve
   alert    -- logged but allowed
 
 Also enforces file path access control and JSONL audit logging.
+Security config is inlined (no YAML parse overhead per invocation).
 """
 
 import json
@@ -23,49 +26,43 @@ from pathlib import Path
 from datetime import datetime, timezone
 
 # ---------------------------------------------------------------------------
-# Security Config (YAML with hardcoded fallback)
+# Security Config (inlined from security.yaml — edit here, not the YAML)
 # ---------------------------------------------------------------------------
 
-SECURITY_YAML = Path(__file__).parent / "security.yaml"
-
-_cached_config = None
+SECURITY_CONFIG = {
+    "commands": {
+        "blocked": [
+            {"pattern": r"rm\s+.*-[a-z]*r[a-z]*f", "description": "rm -rf variants"},
+            {"pattern": r"rm\s+.*-[a-z]*f[a-z]*r", "description": "rm -fr variants"},
+            {"pattern": r"rm\s+--recursive\s+--force", "description": "rm --recursive --force"},
+            {"pattern": r"rm\s+--force\s+--recursive", "description": "rm --force --recursive"},
+            {"pattern": r"rm\s+-r\s+.*-f", "description": "rm -r ... -f (split flags)"},
+            {"pattern": r"rm\s+-f\s+.*-r", "description": "rm -f ... -r (split flags)"},
+            {"pattern": r"chmod\s+777", "description": "World-writable permissions"},
+            {"pattern": r"mkfs\.", "description": "Filesystem format"},
+            {"pattern": r":\(\)\{.*\|.*&.*\};:", "description": "Fork bomb"},
+        ],
+        "confirm": [
+            {"pattern": r"git\s+push\s+.*--force", "description": "Force push"},
+            {"pattern": r"drop\s+(table|database)", "description": "Drop table/database"},
+            {"pattern": r"truncate\s+table", "description": "Truncate table"},
+            {"pattern": r"git\s+reset\s+--hard", "description": "Hard reset"},
+        ],
+        "alert": [
+            {"pattern": r"curl.*\|.*sh", "description": "Pipe curl to shell"},
+            {"pattern": r"wget.*\|.*sh", "description": "Pipe wget to shell"},
+        ],
+    },
+    "files": {
+        "zero_access": ["~/.ssh/*", "~/.gnupg/*", "~/.aws/credentials", "~/.aws/config"],
+        "read_only": [".env", ".env.*", "*.pem", "*.key", "*.p12"],
+        "no_delete": ["*.sqlite", "*.db", "*.sqlite3"],
+    },
+}
 
 
 def load_security_config() -> dict:
-    """Load security patterns from YAML config, with fallback."""
-    global _cached_config
-    if _cached_config is not None:
-        return _cached_config
-
-    try:
-        import yaml
-        if SECURITY_YAML.exists():
-            with open(SECURITY_YAML) as f:
-                _cached_config = yaml.safe_load(f) or {}
-                return _cached_config
-    except Exception:
-        pass
-
-    # Fallback: minimal hardcoded config
-    _cached_config = {
-        "commands": {
-            "blocked": [
-                {"pattern": r"rm\s+.*-[a-z]*r[a-z]*f", "description": "rm -rf"},
-                {"pattern": r"rm\s+.*-[a-z]*f[a-z]*r", "description": "rm -fr"},
-                {"pattern": r"chmod\s+777", "description": "World-writable"},
-            ],
-            "confirm": [
-                {"pattern": r"git\s+push\s+.*--force", "description": "Force push"},
-            ],
-            "alert": [],
-        },
-        "files": {
-            "zero_access": ["~/.ssh/*", "~/.gnupg/*"],
-            "read_only": [".env", ".env.*", "*.pem", "*.key"],
-            "no_delete": ["*.sqlite", "*.db"],
-        },
-    }
-    return _cached_config
+    return SECURITY_CONFIG
 
 
 # ---------------------------------------------------------------------------

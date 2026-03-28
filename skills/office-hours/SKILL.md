@@ -2,15 +2,7 @@
 name: office-hours
 effort: medium
 argument-hint: "[startup | builder]"
-description: |
-  YC-style Office Hours for Athlead pitch preparation. Two modes: Startup mode
-  uses six forcing questions (demand reality, status quo, desperate specificity,
-  narrowest wedge, observation, future-fit) to stress-test the pitch. Builder mode
-  uses design thinking for brainstorming features and product direction.
-  Use when preparing for investor pitches, refining Athlead's positioning,
-  stress-testing assumptions, or brainstorming product direction.
-  Triggers: "office hours", "pitch prep", "help me think through this",
-  "is this worth building", "brainstorm this", "investor prep".
+description: "YC-style Office Hours for pitch preparation. Startup mode stress-tests with forcing questions. Builder mode uses design thinking for product direction."
 metadata:
   last_reviewed: 2026-03-20
   review_cycle: 90

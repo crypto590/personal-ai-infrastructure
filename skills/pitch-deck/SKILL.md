@@ -1,14 +1,7 @@
 ---
 name: pitch-deck
 effort: medium
-description: |
-  Generate investor-grade pitch decks using Slidev from design docs or from scratch.
-  Combines YC, a16z, and Sequoia pitch frameworks into a proven slide structure.
-  Outputs markdown slides, exports to PDF for investor sharing.
-  Use after /office-hours to turn a design doc into a deck, or standalone for
-  any pitch deck need.
-  Triggers: "pitch deck", "make a deck", "create slides", "investor deck",
-  "demo day", "generate pitch", "slidev".
+description: "Generate investor-grade pitch decks using Slidev. Combines YC, a16z, and Sequoia frameworks. Outputs markdown slides, exports to PDF."
 allowed-tools:
   - Bash
   - Read

@@ -79,6 +79,13 @@ Read these before reviewing:
 - `context/knowledge/patterns/self-documenting-code.md` — Semantic vs pragmatic function taxonomy, model drift detection.
 - `skills/review/SKILL.md` — Full 2-pass review structure with platform-specific routing.
 
+## Layer Mixing Check
+
+Before reviewing code quality, check the PR scope:
+- If the diff includes DB schema/migrations **AND** API routes/services **AND** UI components, and exceeds ~200 lines total, flag as **Warning**:
+  > "This PR mixes multiple architectural layers (DB + API + UI). Consider splitting into a layer-based Graphite stack: schema/migrations → API/services → UI/app. Each layer ships as its own PR in the stack."
+- Small cross-layer changes (< ~200 lines) are acceptable as a single PR.
+
 ## Principles
 - Specific over general ("Line 42: null deref when user.email undefined" not "add null checks")
 - Severity first (security > bugs > performance > style)

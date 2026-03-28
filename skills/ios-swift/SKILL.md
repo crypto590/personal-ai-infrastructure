@@ -1,14 +1,7 @@
 ---
 name: ios-swift
 effort: high
-description: >
-  Unified iOS/Swift development skill. Covers MVC architecture (Controllers, Services, Models, Views),
-  SwiftUI patterns, code review (accessibility, Liquid Glass, concurrency, pattern validation, API research),
-  quality checks (SwiftLint, build, tests), cross-platform migration, and iOS distribution (TestFlight,
-  App Store Connect, code signing, xcodebuild CLI).
-  Trigger words: iOS, Swift, SwiftUI, Xcode, Apple, accessibility, concurrency, Liquid Glass, MVC architecture,
-  code review, pattern validation, VoiceOver, actor, async/await, task cancellation, Sendable, SwiftLint, build,
-  TestFlight, distribution, App Store Connect, code signing, archive, provisioning profile.
+description: "Unified iOS/Swift/SwiftUI development. MVC architecture, code review, SwiftLint, accessibility, concurrency, TestFlight, and App Store distribution."
 metadata:
   last_reviewed: 2026-03-17
   review_cycle: 90

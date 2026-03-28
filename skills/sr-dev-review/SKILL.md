@@ -4,14 +4,7 @@ model: claude-opus-4-6
 effort: high
 context: fork
 argument-hint: "[path | PR #number]"
-description: |
-  Strict but fair Senior Developer PR review. Analyzes the current PR diff against
-  how design and code is already implemented on main, enforcing codebase consistency.
-  Reviews against context/knowledge/patterns/ (clean-code-rules.md, self-documenting-code.md).
-  Persona: experienced, no-nonsense senior dev who holds high standards but explains reasoning.
-  Use this skill for thorough PR reviews where you want a senior engineer's perspective,
-  not just a checklist. Triggers: sr review, senior review, senior dev review, strict review,
-  tough review, experienced review, pr critique, code critique.
+description: "Strict Senior Developer PR review enforcing codebase consistency against main. Uses clean-code-rules and self-documenting-code patterns."
 ---
 
 # Senior Developer PR Review
@@ -35,6 +28,33 @@ Determine what to review based on invocation:
 - **No argument** — review all uncommitted changes: `git diff HEAD`
 - **Path argument** — review changes in that path: `git diff HEAD -- <path>`
 - **PR #number** — fetch PR diff: `gh pr diff <number>`
+
+### Step 1b: Read existing PR comments (PR #number only)
+
+When reviewing a PR by number, read the existing comment thread before forming your own opinions:
+
+```bash
+# Fetch inline review comments (code-level)
+gh api repos/{owner}/{repo}/pulls/{number}/comments --paginate
+
+# Fetch top-level review summaries (APPROVE, CHANGES REQUESTED, etc.)
+gh api repos/{owner}/{repo}/pulls/{number}/reviews --paginate
+```
+
+**How to use existing comments:**
+1. **Don't duplicate** — If a reviewer already flagged an issue, don't re-raise it. Reference their comment instead: "As [reviewer] noted..."
+2. **Check resolution** — If a prior review requested changes, verify whether those changes were actually made in the current diff. Flag unresolved items.
+3. **Build on the thread** — If there's an open discussion about an architectural choice, weigh in with your perspective rather than ignoring it.
+4. **Note resolved threads** — Don't re-open issues that were explicitly resolved unless the resolution introduced a new problem.
+
+Include a section in your review output:
+
+```
+### Prior Review Status
+- [N] existing comments, [M] resolved, [K] still open
+- Unresolved items from prior reviews:
+  1. [reviewer] flagged [issue] — [addressed | still open | partially addressed]
+```
 
 ### Step 2: Understand how main does things
 
@@ -158,6 +178,7 @@ you'd want the author to take away from this review?]
 - Uses established abstractions instead of inventing new ones
 - Consistent naming with sibling files
 - Same error handling approach as the rest of the layer
+- **Layer separation:** If this PR mixes DB schema/migrations, API routes/services, AND UI components beyond ~200 lines, flag it — these should be split into a layer-based Graphite stack (DB → API → UI). Small cross-layer changes under ~200 lines are fine as a single PR.
 
 ### 3. Does it follow the team's rules?
 - All 6 clean code rules (bounded iteration, small functions, minimal scope,

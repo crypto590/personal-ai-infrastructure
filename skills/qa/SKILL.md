@@ -9,11 +9,7 @@ allowed-tools:
   - Bash
   - Grep
   - Glob
-description: |
-  Multi-platform quality assurance with health scoring. Two modes: fix (find and fix
-  with atomic commits) and report (report only). Covers build, types, tests, lint,
-  security, performance, accessibility, and contract integrity across web, iOS, Android.
-  Triggers: qa, quality check, health check, quality assurance, run qa, qa fix, qa report.
+description: "Multi-platform QA with health scoring. Two modes: fix (atomic commits) and report. Covers build, types, tests, lint, security, performance, accessibility."
 metadata:
   last_reviewed: 2026-03-20
   review_cycle: 90

@@ -9,11 +9,7 @@ allowed-tools:
   - Bash
   - Grep
   - Glob
-description: |
-  Build, version, and ship pipeline. Runs build/lint/test, performs pre-landing review,
-  auto-versions, generates changelog, creates logical commits, and opens PR.
-  Non-interactive except for merge conflicts, test failures, and major version bumps.
-  Triggers: ship, ship it, deploy, release, open PR, create PR, push changes.
+description: "Build, version, and ship pipeline. Runs build/lint/test, pre-landing review, auto-versions, changelog, logical commits, and opens PR."
 metadata:
   last_reviewed: 2026-03-20
   review_cycle: 90
@@ -150,15 +146,27 @@ Parse all commits since the last version tag and generate a human-friendly chang
 
 ---
 
-### Step 7: Create Logical Commits
+### Step 7: Assess Scope — Single PR or Stacked PRs
+
+Before committing, determine whether the changes should ship as a single PR or a layer-based stack.
+
+**Threshold:**
+- **< ~200 lines total** → single PR (proceed to Step 7a)
+- **> ~200 lines or 3+ files per layer** → stacked PRs by layer (proceed to Step 7b)
+- **Infra/config changes** → always their own PR at the bottom of the stack
+
+---
+
+### Step 7a: Single PR — Create Logical Commits
 
 Group uncommitted changes into logical, well-scoped commits. Do NOT squash everything into one giant commit.
 
 **Commit grouping strategy (in order):**
 1. **Infrastructure/config changes** — `package.json`, `tsconfig.json`, Turborepo config, CI files, Dockerfile changes.
-2. **Service/API changes** — Backend routes, handlers, middleware, database migrations, Drizzle schema changes.
-3. **App/UI changes** — Frontend components, pages, styles, assets.
-4. **Version bump + changelog** — The version bump and CHANGELOG.md update as a single commit.
+2. **DB/schema changes** — Drizzle schema changes, database migrations, seed data.
+3. **Service/API changes** — Backend routes, handlers, middleware, Zod schemas.
+4. **App/UI changes** — Frontend components, pages, styles, assets.
+5. **Version bump + changelog** — The version bump and CHANGELOG.md update as a single commit.
 
 **Commit message format:**
 - Use conventional commit format: `type(scope): description`
@@ -173,20 +181,65 @@ feat(web): add settings page with preference controls
 chore(release): bump to v1.2.0 and update changelog
 ```
 
+Then proceed to Step 8.
+
+---
+
+### Step 7b: Stacked PRs — Create Layer-Based Branches
+
+For large features crossing architectural layers, create a Graphite stack with one branch per layer.
+
+**Layer order (bottom to top of stack):**
+1. **Infra/config** — CI, build config, env, package deps
+2. **DB/schema** — Drizzle schema changes, migrations, seed data
+3. **API/services** — Route handlers, service layer, middleware, Zod schemas
+4. **UI/app** — Frontend components, pages, styles (one branch per platform if multi-platform)
+
+**Process:**
+```bash
+# Start from trunk
+gt sync
+
+# Layer 1: DB/schema
+gt create feature/<name>-schema
+# Stage only schema/migration files
+git add <schema-files>
+gt modify -c -m "feat(db): add athlete profile schema and migration"
+
+# Layer 2: API/services
+gt create feature/<name>-api
+# Stage only API/service files
+git add <api-files>
+gt modify -c -m "feat(api): add athlete profile endpoints"
+
+# Layer 3: UI/app
+gt create feature/<name>-web
+# Stage only UI files
+git add <ui-files>
+gt modify -c -m "feat(web): add athlete profile page"
+```
+
+Each branch should be ≤ 400 lines of meaningful diff. If a single layer exceeds 400 lines, split it further within that layer.
+
+Then proceed to Step 8.
+
 ---
 
 ### Step 8: Open PR
 
-Create a pull request using the best available tool.
+Create pull request(s) using the best available tool.
 
 **Tool detection:**
-- If **Graphite** is available (`gt` command exists) → use `gt submit`
-- Otherwise → use `gh pr create`
+- If **Graphite** is available (`gt` command exists) → use `gt submit` (preferred)
+- Otherwise → fall back to `gh pr create`
+
+**For stacked PRs (Step 7b):** `gt submit` automatically creates linked, dependency-annotated PRs for the entire stack. Each PR in the stack gets its own title and body.
 
 **PR title:**
 - Conventional format: `type(scope): description`
 - Under 70 characters.
-- Examples: `feat(auth): add OAuth2 login flow`, `fix(api): handle null user gracefully`
+- Use monorepo prefixes when applicable: `[shared]`, `[web]`, `[android]`, `[infra]`
+- Examples: `[shared] feat(db): add athlete profile schema`, `feat(api): add profile endpoints`, `[web] feat(profiles): add profile page`
 
 **PR body structure:**
 ```markdown
@@ -204,7 +257,7 @@ Create a pull request using the best available tool.
 - [Description of what breaks and migration path]
 ```
 
-**Push behavior:**
+**Push behavior (gh fallback only):**
 - Push the branch with `git push -u origin <branch>` before creating the PR.
 - If the branch already tracks a remote, use `git push`.
 
