@@ -16,7 +16,7 @@ AGENT_VOICE_MAP = {
     # Main
     "alex": "alex",
     # Code/CTO group
-    "code-reviewer": "cto",
+    "code-review": "cto",
     "general-purpose": "cto",
     "react-developer": "cto",
     "nextjs-app-developer": "cto",

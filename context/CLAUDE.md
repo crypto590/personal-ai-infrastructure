@@ -36,3 +36,18 @@ Load only what's needed, when needed:
 - **Skills are folders** — use file system for progressive disclosure (references/, assets/, workflows/)
 - **Context is on-demand** — only load identity/knowledge files when the task requires them
 - **Modular and composable** — skills combine, context files cross-reference
+- **Generic process, project-specific config** — PAI defines how (loops, scoring); projects define what (criteria, weights)
+
+## Conventions
+
+Reusable patterns in `context/knowledge/patterns/`:
+
+| Pattern | File | Purpose |
+|---------|------|---------|
+| Clean Code Rules | `clean-code-rules.md` | 6 mandatory rules (always active) |
+| Self-Documenting Code | `self-documenting-code.md` | Function/model taxonomy and drift detection |
+| Evaluator Loop | `evaluator-loop.md` | Generate → score → refine → re-score (max 3 iterations) |
+| Quality Contract | `quality-contract.md` | Project CLAUDE.md section for priority weights and thresholds |
+| Feature Registry | `feature-registry.md` | JSON acceptance criteria (`.feature-registry/<name>.json`) |
+
+Source: [Anthropic Engineering](https://www.anthropic.com/engineering) harness design principles

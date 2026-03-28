@@ -46,7 +46,7 @@ AGENT ROUTING (mandatory):
 - Codebase search → `Explore` agent
 - Web research → `research-specialist` agent
 - Architecture → `Plan` agent
-- PR review → `code-reviewer` agent
+- PR review → `code` agent (with /review skill)
 - NEVER use swift-specialist, kotlin-specialist, react-developer, nextjs-app-developer, fastify-specialist.
 
 WHEN TO DELEGATE vs WORK DIRECTLY:

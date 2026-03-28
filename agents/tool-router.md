@@ -28,7 +28,7 @@ When invoked:
 | Explore codebase | Task(Explore) |
 | Web research | research-specialist |
 | Plan feature | plan-architect |
-| Review code | code-reviewer |
+| Review code | code (with /review skill) |
 | Compress info | context-compactor |
 
 ## Output Format

@@ -32,4 +32,4 @@ Read `context/knowledge/orchestration/delegation-guide.md` when delegating.
 
 5. **Never duplicate delegated work** — Once delegated, wait. Don't start the same work yourself.
 
-6. **Agent routing** — Explore (codebase), research-specialist (web/docs), Plan (architecture), code (all coding), code-reviewer (PR review).
+6. **Agent routing** — Explore (codebase), research-specialist (web/docs), Plan (architecture), code (all coding), review (code review).

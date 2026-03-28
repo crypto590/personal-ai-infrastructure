@@ -9,9 +9,9 @@ allowed-tools:
   - Bash
   - Grep
   - Glob
-description: "Multi-platform QA with health scoring. Two modes: fix (atomic commits) and report. Covers build, types, tests, lint, security, performance, accessibility."
+description: "Multi-platform QA with health scoring and evaluator loop. Fix mode (atomic commits) and report mode. 8 categories with project-specific weight overrides."
 metadata:
-  last_reviewed: 2026-03-20
+  last_reviewed: 2026-03-27
   review_cycle: 90
 ---
 
@@ -362,6 +362,50 @@ After all checks complete (in either mode), produce this report:
 4. **Screenshot evidence** — for visual issues, use chrome-devtools MCP if available to capture evidence.
 5. **Never fix security issues silently** — always report what was found, what was fixed, and what remains.
 6. **No destructive changes** — never delete files, drop database tables, or remove API endpoints in fix mode.
+
+---
+
+## Evaluator Loop (Fix Mode Only)
+
+Reference: `context/knowledge/patterns/evaluator-loop.md`
+
+In fix mode, after the first pass of fixes:
+
+1. Re-run all category checks to recalculate scores
+2. If overall score < threshold (default 0.75), run a second fix pass targeting the lowest-scoring categories
+3. Max 2 fix iterations (to stay within the 50-fix hard cap across all iterations)
+4. Report score progression: "Pass 1: XX/100 → Pass 2: XX/100"
+
+If a `## Quality Contract` exists in the project CLAUDE.md, use its `qa` threshold instead of 0.75.
+
+---
+
+## Quality Contract Integration
+
+Reference: `context/knowledge/patterns/quality-contract.md`
+
+If the project's CLAUDE.md contains a `## Quality Contract` section:
+
+1. Read priority levels for each category
+2. Adjust weights: high = weight × 1.5, medium = weight × 1.0, low = weight × 0.5
+3. Renormalize weights to sum to 100%
+4. Use project-specific thresholds if defined
+
+Example: A project with `security: high, accessibility: low` shifts Security from 15% to ~19% and Accessibility from 10% to ~4%.
+
+---
+
+## Normalized Scores
+
+In the report output, include a normalized 0-1 score alongside the 0-100 score for consistency with other skill rubrics:
+
+```
+### Normalized Scores
+| Category | Score (0-100) | Score (0-1) |
+|----------|---------------|-------------|
+| Build    | 95            | 0.95        |
+| ...      | ...           | ...         |
+```
 
 ---
 

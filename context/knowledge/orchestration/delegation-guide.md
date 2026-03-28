@@ -10,7 +10,7 @@ Reference for Alex when delegating to sub-agents.
 | Web research | `research-specialist` | Docs, best practices, external info |
 | Architecture | `Plan` | Design decisions, implementation planning |
 | Code writing | `code` | Multi-file coding, features, bug fixes, refactoring |
-| Code review | `code-reviewer` | Pre-PR quality checks |
+| Code review | `code` (with `/review` skill) | Pre-PR quality checks |
 
 ## Delegation Template
 

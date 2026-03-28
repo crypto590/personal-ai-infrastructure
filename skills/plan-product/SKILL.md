@@ -1,16 +1,16 @@
 ---
 name: plan-product
 effort: high
-argument-hint: "[EXPAND | TRIM]"
-description: "Founder/product strategic review of engineering plans. Evaluates scope, architecture, security, edge cases, performance, and long-term trajectory."
+argument-hint: "[EXPAND | HOLD | REDUCE]"
+description: "Product strategic review of engineering plans. Evaluates scope, architecture, security, edge cases, and trajectory. Scored 0-1 per section with evaluator loop."
 metadata:
-  last_reviewed: 2026-03-20
+  last_reviewed: 2026-03-27
   review_cycle: 90
 ---
 
-# Founder/Product Strategic Review
+# Product Strategic Review
 
-Run this review before starting any major feature to evaluate scope, architecture, risk, and long-term trajectory. This is the product-minded review — it asks "should we build this?" and "are we building the right thing?" before engineering dives into "how."
+Run this review before starting any major feature to evaluate scope, architecture, risk, and long-term trajectory. This review asks "should we build this?" and "are we building the right thing?" before engineering dives into "how."
 
 ---
 
@@ -140,7 +140,7 @@ Apply these to every section of the review:
 - Rollback strategy: how do we undo this if it breaks?
 - Canary/gradual rollout: can we roll this out to a subset of users first?
 - Documentation: is the runbook updated?
-- **PR layering:** Does this feature cross architectural layers (DB + API + UI)? If so and it exceeds ~200 lines, plan for a layer-based Graphite stack: DB/schema → API/services → UI/app. Each layer ships as its own PR, reviewed and merged in order. Small features (< ~200 lines) can ship as a single PR.
+- **PR layering:** Does this feature cross architectural layers (DB + API + UI)? If so and it exceeds ~200 lines, plan for a layer-based stack: DB/schema → API/services → UI/app.
 
 ### 10. Long-Term Trajectory
 
@@ -152,31 +152,35 @@ Apply these to every section of the review:
 
 ---
 
-## Athlead-Specific Adaptations
+## Scoring Rubric
 
-Apply these checks for every feature in the Athlead stack:
+Reference: `context/knowledge/patterns/evaluator-loop.md`
 
-### Contract-First Validation
-- Zod schemas defined first, then OpenAPI spec generated, then typed clients
-- Every API endpoint has a Zod request and response schema
-- Frontend and mobile clients use generated types — never hand-written API types
+Score each section 0.0 to 1.0:
 
-### BFF Pattern Enforcement
-- Client (web/iOS/Android) NEVER calls a microservice directly
-- All client requests go through the BFF (Backend for Frontend) layer
-- BFF handles auth, aggregation, and response shaping
+| Section | Criterion | Weight |
+|---------|-----------|--------|
+| Architecture | Components have clear boundaries, justified dependencies, data flow diagrammed | 0.15 |
+| Error Map | All failure modes enumerated, all 4 data paths traced per operation | 0.10 |
+| Security | Auth boundaries defined, inputs validated, no OWASP gaps | 0.15 |
+| Edge Cases | Empty/concurrent/offline/timezone scenarios covered | 0.10 |
+| Code Quality | No DRY violations, consistent naming, appropriate complexity | 0.10 |
+| Test Review | All code paths have tests, tests are isolated | 0.10 |
+| Performance | No N+1, caching strategy defined, latency estimated | 0.10 |
+| Observability | Logging, metrics, alerts, tracing addressed | 0.05 |
+| Deployment | Feature flags, migration plan, rollback strategy defined | 0.05 |
+| Long-Term | Maintainable at 6mo, scales to 10x, migration path clear | 0.10 |
 
-### Service Isolation
-- 5 microservices must never import from each other
-- Communication only via API calls or message queue
-- Shared types live in a shared package, not in service code
-- Database schemas are per-service — no cross-service table access
+## Evaluator Loop
 
-### Multi-Platform Scope
-- Every feature must consider: web (Next.js), iOS (SwiftUI), Android (Compose)
-- API changes affect all three platforms — scope the client work
-- Feature parity decisions: which platforms get this feature and when?
-- Platform-specific edge cases (push notifications, deep links, offline)
+After producing the initial review:
+
+1. Score each section against the rubric above
+2. If overall weighted score < 0.7 (or project's Quality Contract threshold), identify the 3 lowest-scoring sections
+3. Re-analyze those sections with deeper investigation
+4. Re-score. Max 3 iterations.
+
+If a `## Quality Contract` exists in the project CLAUDE.md, use its `planning` threshold and priority weights instead of defaults. See `context/knowledge/patterns/quality-contract.md`.
 
 ---
 
@@ -184,7 +188,7 @@ Apply these checks for every feature in the Athlead stack:
 
 When an issue is found during review:
 
-1. **One AskUserQuestion per issue** — Don't bundle multiple decisions.
+1. **One question per issue** — Don't bundle multiple decisions.
 
 2. **3-4 lettered options with tradeoff analysis:**
    - **(A)** Option name — Description
@@ -195,8 +199,6 @@ When an issue is found during review:
      - Effort: ...
      - Risk: ...
      - Maintenance: ...
-   - **(C)** Option name — Description
-     - ...
 
 3. **Never silently decide** — Every architectural decision, every scope cut, every deferral is surfaced to the user with options.
 
@@ -208,9 +210,10 @@ When an issue is found during review:
 
 After completing the review, produce:
 
-1. **Architecture diagram** (ASCII)
-2. **Error map** (table of all failure modes)
-3. **Risk summary** (top 3 risks with mitigation)
-4. **Scope recommendation** (based on selected mode)
-5. **Deferred items** (for TODOS.md)
-6. **Action items** (prioritized list of what to build)
+1. **Score table** (all 10 sections with 0-1 scores, weighted average, iteration count)
+2. **Architecture diagram** (ASCII)
+3. **Error map** (table of all failure modes)
+4. **Risk summary** (top 3 risks with mitigation)
+5. **Scope recommendation** (based on selected mode)
+6. **Deferred items** (for TODOS.md)
+7. **Action items** (prioritized list of what to build)

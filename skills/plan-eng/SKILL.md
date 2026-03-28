@@ -3,9 +3,9 @@ name: plan-eng
 effort: high
 context: fork
 agent: plan-architect
-description: "Technical engineering planning before writing code. Evaluates architecture, code quality, test coverage, performance, with scope challenge and DRY enforcement."
+description: "Technical engineering planning before writing code. Evaluates architecture, code quality, test coverage, performance. Scored 0-1 with evaluator loop."
 metadata:
-  last_reviewed: 2026-03-20
+  last_reviewed: 2026-03-27
   review_cycle: 90
 ---
 
@@ -23,7 +23,7 @@ Before reviewing anything, challenge the scope:
 
 1. **What existing code already solves this?**
    - Search the codebase for similar patterns, utilities, or components
-   - Check shared packages in the turborepo
+   - Check shared packages for existing abstractions
    - Look for prior art that can be extended rather than rewritten
 
 2. **What's the absolute minimum change needed?**
@@ -81,10 +81,10 @@ Evaluate system design, coupling, and data flow.
 For any non-trivial flow (more than 2 services or 3 steps), draw an ASCII diagram:
 
 ```
-Request → Fastify Route Handler
-  → Zod Validation
+Request → Route Handler
+  → Input Validation
     → Service Layer (business logic)
-      → Drizzle Query (database)
+      → Data Access (database)
         → Response Serialization
           → Client
 ```
@@ -122,34 +122,25 @@ Every function should be clearly one of two types:
 - Integration tested, expected to change over time
 
 **Flag these anti-patterns:**
-- A semantic-named function with side effects (e.g., `calculate_tax()` that also writes to DB) — this is function drift
-- A pragmatic function reused in 4+ places — the shared logic should be extracted into semantic functions
-- A function that needs comments to explain what it does — either rename it or split it
+- A semantic-named function with side effects (function drift)
+- A pragmatic function reused in 4+ places — extract shared logic into semantic functions
+- A function that needs comments to explain what it does — rename or split it
 
 #### Model Coherence
 
 Data shapes should make wrong states impossible.
 
-- **Field coherence:** Can you look at every field and know it belongs under this model's name? If not, the model is coupling unrelated concepts — split it.
-- **Optional field audit:** 3+ optional fields that are only set in specific contexts → the model is doing too many jobs.
-- **Compose, don't merge:** Independent concepts needed together should be composed (`UserAndWorkspace { user, workspace }`) not flattened.
-- **Brand types on domain IDs:** Bare `string` or `UUID` for domain IDs → use branded/nominal types (`DocumentId`, `TeamId`) to catch cross-domain swaps at compile time.
+- **Field coherence:** Can you look at every field and know it belongs under this model's name? If not, split it.
+- **Optional field audit:** 3+ optional fields only set in specific contexts → the model is doing too many jobs.
+- **Compose, don't merge:** Independent concepts needed together should be composed, not flattened.
+- **Brand types on domain IDs:** Bare `string` or `UUID` for domain IDs → use branded/nominal types to catch cross-domain swaps at compile time.
 
 #### Aggressive DRY Enforcement
 
 - Search the entire codebase for duplicate logic before writing new code
 - If similar logic exists in 2+ places, extract to a shared utility
-- Check shared packages in the turborepo for existing abstractions
-- Flag any copy-paste patterns — even across different platforms (web/iOS/Android API contracts)
-
-#### Naming Consistency Check
-
-- Do names follow existing conventions in the codebase?
-- Are abbreviations consistent? (e.g., don't mix `usr` and `user`)
-- Do function names describe what they do, not how they do it?
-- Are boolean variables named as questions? (`isActive`, `hasPermission`)
-- Do file names match the primary export?
-- Are semantic functions named by operation and pragmatic functions named by context?
+- Check shared packages for existing abstractions
+- Flag any copy-paste patterns
 
 #### Complexity Analysis
 
@@ -157,14 +148,7 @@ Data shapes should make wrong states impossible.
 - Flag functions with more than 3 levels of nesting — flatten with early returns
 - Flag functions with more than 4 parameters — use an options object
 - Cyclomatic complexity over 10 — must be simplified
-- **Bounded iteration:** Flag any loop, retry, poll, or pagination without an explicit maximum bound (see Rule 1)
-
-#### Dead Code Detection
-
-- Are there unused imports?
-- Are there unreachable code paths?
-- Are there commented-out blocks? (Remove or document why they exist)
-- Are there feature flags for features that shipped months ago?
+- **Bounded iteration:** Flag any loop, retry, poll, or pagination without an explicit maximum bound (Rule 1)
 
 #### Code Quality Checklist
 
@@ -178,9 +162,8 @@ Data shapes should make wrong states impossible.
 - [ ] No nesting deeper than 3 levels
 - [ ] No function has more than 4 parameters
 - [ ] No dead code or stale comments
-- [ ] Semantic functions have no comments; pragmatic functions document only unexpected behavior
 - [ ] Every loop, retry, poll, and pagination has an explicit maximum bound
-- [ ] All system boundary inputs validated (API responses, user input, env vars)
+- [ ] All system boundary inputs validated
 
 ---
 
@@ -203,24 +186,11 @@ createUser()
 
 #### Path-to-Test Mapping
 
-| Code Path                     | Test File              | Test Name                    | Status |
-| ----------------------------- | ---------------------- | ---------------------------- | ------ |
-| createUser happy path         | user.test.ts           | creates user with valid data | Done   |
-| createUser duplicate email    | user.test.ts           | rejects duplicate email      | TODO   |
-| createUser DB failure         | user.test.ts           | handles DB connection error  | TODO   |
-
-#### Flag Untested Paths
-
-- Every code path in the ASCII diagram must have a corresponding test
-- Flag any path without a test — do not proceed until resolved
-- Error paths are the most commonly missed — check them explicitly
-
-#### Test Isolation Check
-
-- Tests must not depend on each other (no shared mutable state)
-- Tests must not depend on external services (mock or stub)
-- Tests must be idempotent (running twice gives same result)
-- Database tests must use transactions or test-specific schemas
+| Code Path | Test File | Test Name | Status |
+|-----------|-----------|-----------|--------|
+| createUser happy path | user.test.ts | creates user with valid data | Done |
+| createUser duplicate email | user.test.ts | rejects duplicate email | TODO |
+| createUser DB failure | user.test.ts | handles DB connection error | TODO |
 
 #### Test Checklist
 
@@ -237,29 +207,29 @@ createUser()
 
 Evaluate queries, caching, memory, and latency.
 
-#### Drizzle Query Analysis
+#### Query Analysis
 
-- **Missing `.with()` calls:** Are related records being fetched in N+1 loops instead of eager loading with `.with()`?
-- **Missing `.returning()` calls:** After insert/update, are you making a second query to fetch the result? Use `.returning()` instead.
-- **Unbounded queries:** Is there a `.limit()` on every list query? Never fetch all records.
-- **Missing indexes:** Does the WHERE clause use indexed columns? Check the Drizzle schema.
-- **Transaction scope:** Are multi-step operations wrapped in transactions?
+- **N+1 detection:** Queries inside loops should use eager loading or batch queries
+- **Missing projections:** After insert/update, use returning clauses instead of re-fetching
+- **Unbounded queries:** Every list query must have a limit
+- **Missing indexes:** WHERE clause columns should be indexed
+- **Transaction scope:** Multi-step operations should be wrapped in transactions
 
 #### Bundle Size Impact
 
 - Does this add new client-side dependencies?
 - Can the dependency be loaded lazily (dynamic import)?
-- Check bundle size with `bun run build` and compare before/after
+- Compare bundle size before/after
 - Target: no single page increase > 10KB gzipped without justification
 
 #### Latency Estimates
 
 For every new endpoint, estimate response time:
 
-| Endpoint                | DB Queries | External Calls | Estimated Latency |
-| ----------------------- | ---------- | -------------- | ----------------- |
-| `POST /api/users`       | 1 insert   | 0              | ~20ms             |
-| `GET /api/feed`         | 2 selects  | 1 (cache)      | ~50ms             |
+| Endpoint | DB Queries | External Calls | Estimated Latency |
+|----------|-----------|----------------|-------------------|
+| `POST /api/users` | 1 insert | 0 | ~20ms |
+| `GET /api/feed` | 2 selects | 1 (cache) | ~50ms |
 
 - Target: p95 under 200ms for API routes
 - Target: p95 under 100ms for cached routes
@@ -267,7 +237,7 @@ For every new endpoint, estimate response time:
 
 #### Memory Leak Potential
 
-- Are event listeners cleaned up? (especially in React effects and SwiftUI onAppear/onDisappear)
+- Are event listeners cleaned up?
 - Are subscriptions unsubscribed on unmount?
 - Are large objects held in closures unnecessarily?
 - Are WebSocket connections closed on navigation?
@@ -275,8 +245,8 @@ For every new endpoint, estimate response time:
 #### Performance Checklist
 
 - [ ] No N+1 query patterns
-- [ ] All list queries have `.limit()`
-- [ ] `.returning()` used instead of re-fetching after insert/update
+- [ ] All list queries have a limit
+- [ ] Returning clauses used instead of re-fetching after insert/update
 - [ ] New indexes added for new WHERE clauses
 - [ ] Bundle size impact measured
 - [ ] Latency estimates documented
@@ -284,39 +254,29 @@ For every new endpoint, estimate response time:
 
 ---
 
-## Athlead-Specific Adaptations
+## Scoring Rubric
 
-### Stack Mapping
+Reference: `context/knowledge/patterns/evaluator-loop.md`
 
-| Concept               | Athlead Implementation              |
-| --------------------- | ----------------------------------- |
-| ORM / Models          | Drizzle schemas (`schema.ts`)       |
-| API Routes (server)   | Fastify route handlers              |
-| API Routes (web)      | Next.js App Router (`route.ts`)     |
-| Views (web)           | React Server/Client Components      |
-| Views (iOS)           | SwiftUI Views                       |
-| Views (Android)       | Compose Screens                     |
-| Build system          | Turborepo pipelines                 |
-| Package manager       | bun                                 |
-| Database              | PostgreSQL                          |
-| Validation            | Zod schemas                         |
+Score each section 0.0 to 1.0:
 
-### Turbo Pipeline Awareness
+| Section | Criterion | Weight |
+|---------|-----------|--------|
+| Architecture | Simplest design, no circular deps, justified abstractions, data flow clear | 0.30 |
+| Code Quality | Functions classified, no drift, DRY, naming consistent, complexity controlled | 0.25 |
+| Test Coverage | All paths diagrammed, every path has a test, error paths covered | 0.25 |
+| Performance | No N+1, limits on queries, latency estimated, no leaks | 0.20 |
 
-- `turbo run build` — builds all packages in dependency order
-- `turbo run test` — runs tests across all packages
-- `turbo run lint` — lints all packages
-- New packages must be added to `turbo.json` pipeline config
-- Check that new package dependencies are reflected in turbo's task graph
+## Evaluator Loop
 
-### File-Based Routing (Next.js App Router)
+After producing the initial review:
 
-- Routes defined by directory structure in `app/`
-- `page.tsx` = route page, `layout.tsx` = shared layout
-- `route.ts` = API route handler
-- `loading.tsx` = loading UI, `error.tsx` = error boundary
-- Dynamic routes: `[param]/page.tsx`
-- Route groups: `(group)/` for organization without URL impact
+1. Score each section against the rubric above
+2. If overall weighted score < 0.7 (or project's Quality Contract threshold), identify the lowest-scoring sections
+3. Re-analyze those sections with deeper investigation
+4. Re-score. Max 3 iterations.
+
+If a `## Quality Contract` exists in the project CLAUDE.md, use its `planning` threshold and `planning-weights` instead of defaults. See `context/knowledge/patterns/quality-contract.md`.
 
 ---
 
@@ -336,23 +296,20 @@ After the scope challenge and before diving into sections, determine the PR stra
 
 ### Threshold
 - **< ~200 lines total** → single PR, even if cross-layer
-- **> ~200 lines or 3+ files per layer** → layer-based Graphite stack
+- **> ~200 lines or 3+ files per layer** → layer-based stack
 
 ### Layer-Based Stack Template
 
-When stacking is warranted, include this in the output:
+When stacking is warranted:
 
 | # | Branch | Layer | Key Files | ~Lines |
 |---|--------|-------|-----------|--------|
 | 1 | feature/<name>-infra | Infra/config | CI, env, packages | ~X |
-| 2 | feature/<name>-schema | DB/schema | Drizzle schema, migrations | ~X |
-| 3 | feature/<name>-api | API/services | Routes, handlers, Zod schemas | ~X |
-| 4 | feature/<name>-web | UI/app (web) | Components, pages | ~X |
-| 5 | feature/<name>-android | UI/app (android) | Compose screens | ~X |
+| 2 | feature/<name>-schema | DB/schema | Schema, migrations | ~X |
+| 3 | feature/<name>-api | API/services | Routes, handlers, schemas | ~X |
+| 4 | feature/<name>-ui | UI/app | Components, pages | ~X |
 
-**Layer order matters:** Each layer depends on the one below it. Schema must land before API, API before UI. Use Graphite (`gt create`, `gt submit`) for stacked PRs; fall back to `gh` if unavailable.
-
-Skip layers that don't apply. Each entry should be ≤ 400 lines of meaningful diff.
+Layer order matters: each layer depends on the one below it. Skip layers that don't apply. Each entry should be ≤ 400 lines of meaningful diff.
 
 ---
 
@@ -360,10 +317,11 @@ Skip layers that don't apply. Each entry should be ≤ 400 lines of meaningful d
 
 After completing the review, produce:
 
-1. **Scope assessment** (files touched, new abstractions, smell test result)
-2. **PR stack recommendation** (single PR or layer-based stack with branch names and line estimates)
-3. **Findings per section** (numbered, with severity: blocker/warning/note)
-4. **Code path diagrams** (ASCII, with test coverage status)
-5. **Performance estimates** (latency table)
-6. **Action items** (prioritized: fix before coding / fix during coding / fix later)
-7. **Deferred items** (for TODOS.md with context)
+1. **Score table** (4 sections with 0-1 scores, weighted average, iteration count)
+2. **Scope assessment** (files touched, new abstractions, smell test result)
+3. **PR stack recommendation** (single PR or layer-based stack with branch names and line estimates)
+4. **Findings per section** (numbered, with severity: blocker/warning/note)
+5. **Code path diagrams** (ASCII, with test coverage status)
+6. **Performance estimates** (latency table)
+7. **Action items** (prioritized: fix before coding / fix during coding / fix later)
+8. **Deferred items** (for TODOS.md with context)
