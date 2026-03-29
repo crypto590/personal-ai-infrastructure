@@ -1,7 +1,7 @@
 ---
 name: ios-swift
 effort: high
-description: "Unified iOS/Swift/SwiftUI development. MVC architecture, code review, SwiftLint, accessibility, concurrency, TestFlight, and App Store distribution."
+description: "Unified iOS/Swift/SwiftUI development. MVC architecture, code review, SwiftLint, accessibility, concurrency, build optimization, TestFlight, and App Store distribution."
 metadata:
   last_reviewed: 2026-03-17
   review_cycle: 90
@@ -82,6 +82,22 @@ Automated code quality tools for iOS projects.
 
 ---
 
+### Build Optimization
+
+Xcode build performance analysis and optimization. Adapted from [AvdLee/Xcode-Build-Optimization-Agent-Skill](https://github.com/AvdLee/Xcode-Build-Optimization-Agent-Skill).
+
+| Topic | File | Summary |
+|-------|------|---------|
+| Orchestrator | [build-optimization/orchestrator.md](build-optimization/orchestrator.md) | Full workflow: benchmark, analyze, prioritize, approve, implement, verify |
+| Benchmark | [build-optimization/benchmark.md](build-optimization/benchmark.md) | Repeatable clean/incremental build measurements with timestamped artifacts |
+| Compilation Analyzer | [build-optimization/compilation-analyzer.md](build-optimization/compilation-analyzer.md) | Swift compile hotspots, type-checking diagnostics, source-level fixes |
+| Project Analyzer | [build-optimization/project-analyzer.md](build-optimization/project-analyzer.md) | Build settings, schemes, script phases, target dependencies audit |
+| SPM Analysis | [build-optimization/spm-analysis.md](build-optimization/spm-analysis.md) | Package graph, plugin overhead, module variants, macro cascading |
+
+**Quick Start:** Use the orchestrator for a full optimization pass, or pick a specific analyzer for targeted investigation.
+
+---
+
 ### Workflows
 
 | Topic | File | Summary |
@@ -119,6 +135,10 @@ Reviewing iOS code for PR
 Running quality checks before commit
   -> Run ios-check
   -> See: quality/checks.md
+
+Slow Xcode builds or build optimization
+  -> Run build optimization orchestrator
+  -> See: build-optimization/orchestrator.md
 ```
 
 ---
