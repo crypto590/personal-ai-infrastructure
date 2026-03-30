@@ -11,7 +11,7 @@ Key insight: Models are "less likely to inappropriately change or overwrite JSON
 ## File Location
 
 ```
-<project-root>/.feature-registry/<feature-name>.json
+<project-root>/docs/feature-registry/<feature-name>.json
 ```
 
 ---
@@ -88,7 +88,7 @@ Key insight: Models are "less likely to inappropriately change or overwrite JSON
 ## Workflow
 
 ```
-Plan phase:     Define criteria → create .feature-registry/<name>.json
+Plan phase:     Define criteria → create docs/feature-registry/<name>.json
 Build phase:    Generator implements one criterion at a time
 Evaluate phase: Evaluator tests each criterion, flips passes, records evidence
 Ship phase:     All criteria pass → feature is ready for PR

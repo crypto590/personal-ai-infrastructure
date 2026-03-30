@@ -133,7 +133,7 @@ def check_file_access(tool_name: str, file_path: str, config: dict) -> tuple:
         for pattern in file_rules.get("read_only", []):
             expanded = expand_path(pattern)
             if fnmatch.fnmatch(basename, pattern) or fnmatch.fnmatch(resolved, expanded):
-                if not file_path.endswith('.env.sample'):
+                if not (file_path.endswith('.env.sample') or file_path.endswith('.env.example')):
                     return "blocked", f"Read-only file: {pattern}"
 
     return "allow", ""

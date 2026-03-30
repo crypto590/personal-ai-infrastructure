@@ -313,6 +313,42 @@ Layer order matters: each layer depends on the one below it. Skip layers that do
 
 ---
 
+## Feature Registry Output
+
+Reference: `context/knowledge/patterns/feature-registry.md`
+
+After completing the review, write a feature registry to `docs/feature-registry/<feature-slug>.json`.
+
+Create the directory if it doesn't exist. Use the schema from the pattern file:
+
+```json
+{
+  "feature": "<slug>",
+  "created": "<YYYY-MM-DD>",
+  "story": "<original user request>",
+  "plan": "<2-3 sentence high-level approach>",
+  "criteria": [
+    {
+      "id": "C1",
+      "description": "<specific testable behavior>",
+      "category": "functional|edge-case|security|performance|accessibility",
+      "passes": false,
+      "evidence": null
+    }
+  ],
+  "summary": { "total": N, "passing": 0, "failing": N }
+}
+```
+
+Rules:
+- 4-8 criteria per feature
+- Only include **engineering** criteria (architecture, code quality, test coverage, performance)
+- Design and product criteria belong in `/plan-design` and `/plan-product` registries
+- Each criterion must be independently testable by a separate evaluator agent
+- The registry is the contract between planning and implementation
+
+---
+
 ## Output Format
 
 After completing the review, produce:
@@ -324,4 +360,5 @@ After completing the review, produce:
 5. **Code path diagrams** (ASCII, with test coverage status)
 6. **Performance estimates** (latency table)
 7. **Action items** (prioritized: fix before coding / fix during coding / fix later)
-8. **Deferred items** (for TODOS.md with context)
+8. **Feature registry** (written to `docs/feature-registry/<slug>.json`)
+9. **Deferred items** (for TODOS.md with context)

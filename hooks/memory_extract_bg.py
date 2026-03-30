@@ -41,7 +41,8 @@ def extract_episodes(transcript_path: str, product: str, cwd: str):
     # Call claude CLI for extraction
     try:
         result = subprocess.run(
-            ["claude", "-p", EXTRACTION_PROMPT + "\n\n---\n\n" + text],
+            ["claude", "--bare", "-p", "--model", "haiku",
+             EXTRACTION_PROMPT + "\n\n---\n\n" + text],
             capture_output=True,
             text=True,
             timeout=60,

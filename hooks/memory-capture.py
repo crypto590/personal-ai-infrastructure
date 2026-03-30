@@ -38,11 +38,13 @@ def _can_extract(product: str) -> bool:
         except (ValueError, OSError):
             pass
 
-    # Check lockfile (non-blocking)
+    # Check lockfile (non-blocking) — don't close the fd, keep lock held
     try:
         lock_fd = open(lock_path, 'w')
         fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        lock_fd.close()
+        # Intentionally keep lock_fd open — lock is released when process exits
+        # Store on module so GC doesn't close it
+        _can_extract._lock_fd = lock_fd
     except (IOError, OSError):
         return False
 
