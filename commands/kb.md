@@ -13,7 +13,18 @@ Manage LLM-compiled knowledge bases in `/Users/coreyyoung/Desktop/The_Hub/Knowle
 
 ## Commands
 
-Parse the user's argument to determine which command to run:
+Parse the user's argument to determine which command to run. **If no argument is given, run the full loop automatically.**
+
+### `/kb` (no args) — Full loop
+
+Run the entire pipeline in sequence:
+
+1. **Status** — show pending clippings count and KB stats
+2. **Ingest** — sort all clippings into KBs (auto-create new KBs as needed, ask user to confirm new topic names)
+3. **Compile** — compile all KBs that received new raw/ files
+4. **Lint** — run health check on all compiled KBs, report gaps and suggestions
+
+Report a summary at the end: what was ingested, what was compiled, any gaps found.
 
 ### `/kb ingest` — Sort clippings into KBs
 
