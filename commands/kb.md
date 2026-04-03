@@ -1,5 +1,5 @@
 ---
-description: "Manage LLM Knowledge Bases — ingest clippings, compile wiki, query, lint. Usage: /kb <command> [args]"
+description: "Manage LLM Knowledge Bases — ingest, compile, query, lint, repo. Usage: /kb <command> [args]"
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent, WebFetch, WebSearch, AskUserQuestion
 ---
 
@@ -94,6 +94,79 @@ List all KBs with article counts and last modified dates.
 ### `/kb create <topic>` — Create a new empty KB
 
 Create the directory structure for a new topic KB.
+
+### `/kb repo <path> [name]` — Create KB from a codebase
+
+Build a knowledge base from a git repository. The agent scans the repo, extracts key artifacts into `raw/`, and compiles a wiki that any agent (or human) can use to understand the codebase.
+
+**If no name is given**, derive it from the repo directory name (e.g., `/path/to/athlead` → `athlead`).
+
+#### Step 1: Scaffold
+
+Create the KB at `Knowledge-Bases/{name}/` with the standard structure, plus a `repo.md` metadata file:
+
+```markdown
+---
+title: "{name} Codebase KB"
+type: repo
+repo_path: "{absolute path}"
+last_synced: {ISO date}
+---
+```
+
+#### Step 2: Extract raw artifacts
+
+Scan the repo and copy key files into `raw/`. Do NOT copy the entire repo. Extract:
+
+**Always extract (if they exist):**
+- `README.md`, `CLAUDE.md`, any root-level docs
+- Package manifests: `package.json`, `Cargo.toml`, `pyproject.toml`, `go.mod`, `Gemfile`, etc.
+- Config files: `tsconfig.json`, `docker-compose.yml`, `.env.example`, etc.
+- CI/CD: `.github/workflows/*.yml`, `Dockerfile`
+- API schemas: `openapi.yaml`, `schema.graphql`, `*.proto`
+- Database schemas: migration files, `schema.prisma`, `drizzle/` schemas
+
+**Generate and extract:**
+- `_tree.md` — output of `tree -L 3 -I 'node_modules|.git|dist|build|target|__pycache__'` as a markdown file
+- `_git-summary.md` — recent git log (`git log --oneline -30`), branch list, contributors
+- `_entry-points.md` — identify and concatenate key entry point files (main.ts, index.ts, app.py, main.rs, etc.) with file path headers
+- `_architecture.md` — any docs/architecture files, ADRs (Architecture Decision Records), or design docs found in `docs/`, `doc/`, `adr/`, or similar
+
+**Smart extraction for large repos:**
+- For monorepos, extract each package/app's manifest and entry point
+- Skip generated files, lock files, vendored deps
+- Cap individual files at 500 lines — truncate with a note if longer
+- Total raw/ should stay under ~50 files to keep compilation manageable
+
+#### Step 3: Compile
+
+Spawn the `kb-builder` agent to compile the wiki, but with **codebase-specific article types**:
+
+**Reference articles** (`wiki/references/`):
+- One per major module, service, or package
+- Summarizes purpose, key exports, dependencies, entry points
+
+**Concept articles** (`wiki/concepts/`):
+- Domain concepts the code implements (e.g., auth flow, payment processing, data pipeline)
+- Architecture patterns used (e.g., monorepo structure, API gateway, event sourcing)
+- Key technical decisions and trade-offs
+
+**Index** (`wiki/_index.md`):
+- Module map: what each part of the codebase does
+- Dependency graph: how modules relate
+- Tech stack summary
+- "Start here" guide: where to look first for common tasks
+
+**Summaries** (`wiki/_summaries.md`):
+- One-line summary per raw artifact
+
+#### Step 4: Report
+
+Show what was extracted, what was compiled, and suggest next steps (e.g., "run `/kb repo <path>` again after major changes to re-sync").
+
+### `/kb sync [name]` — Re-sync a repo KB
+
+Re-run extraction on an existing repo KB to pick up changes. Reads `repo.md` for the path, re-extracts artifacts, and recompiles only what changed.
 
 ### `/kb status` — Show pending clippings + KB stats
 
