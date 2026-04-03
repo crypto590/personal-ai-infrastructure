@@ -3,6 +3,7 @@ name: plan-architect
 description: Create implementation plans before writing code. Breaks down tasks into concrete steps, identifies dependencies, and creates actionable roadmaps.
 disallowedTools: Edit, Write
 model: sonnet
+effort: high
 maxTurns: 15
 tools: Read, Glob, Grep, Write
 permissionMode: default

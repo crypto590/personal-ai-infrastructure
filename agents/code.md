@@ -2,6 +2,7 @@
 name: code
 description: General-purpose coding agent. Multi-file code changes, bug fixes, features, and refactoring. Loads clean code rules and platform conventions on demand.
 model: inherit
+effort: high
 maxTurns: 25
 tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch
 skills:

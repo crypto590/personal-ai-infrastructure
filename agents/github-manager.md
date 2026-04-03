@@ -2,6 +2,7 @@
 name: github-manager
 description: Orchestrate GitHub workflows, manage PRs, triage issues, coordinate code reviews, and enforce development processes through version control.
 model: sonnet
+effort: medium
 maxTurns: 15
 tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch
 permissionMode: default

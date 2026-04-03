@@ -2,6 +2,7 @@
 name: test-automation-engineer
 description: Use this agent when you need test strategy, unit testing, integration testing, end-to-end testing, test automation frameworks, CI/CD test integration, or quality assurance.
 model: sonnet
+effort: high
 maxTurns: 25
 tools: Read, Write, Edit, Bash, Grep, Glob
 permissionMode: default

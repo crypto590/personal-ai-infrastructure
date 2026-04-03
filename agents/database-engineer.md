@@ -2,6 +2,7 @@
 name: database-engineer
 description: Use this agent when you need database design, optimization, scaling, and management across SQL and NoSQL systems with focus on performance, reliability, and data integrity.
 model: sonnet
+effort: high
 maxTurns: 20
 tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch
 permissionMode: default

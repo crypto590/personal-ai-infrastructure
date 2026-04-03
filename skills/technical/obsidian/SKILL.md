@@ -178,12 +178,12 @@ obsidian vault=The_Hub tasks status=todo
 
 | Workflow | When to Use | Load Command |
 |----------|-------------|--------------|
-| Session Logging | Appending decisions/outcomes to vault | `read /Users/coreyyoung/.claude/skills/technical/obsidian/workflows/session-logging.md` |
-| Knowledge Retrieval | Searching vault before starting work | `read /Users/coreyyoung/.claude/skills/technical/obsidian/workflows/knowledge-retrieval.md` |
-| Task Management | Managing Obsidian tasks from sessions | `read /Users/coreyyoung/.claude/skills/technical/obsidian/workflows/task-management.md` |
-| Obsidian Markdown | Writing Obsidian-flavored markdown | `read /Users/coreyyoung/.claude/skills/technical/obsidian/workflows/obsidian-markdown.md` |
-| Obsidian Bases | Creating .base database files | `read /Users/coreyyoung/.claude/skills/technical/obsidian/workflows/obsidian-bases.md` |
-| JSON Canvas | Creating .canvas visual files | `read /Users/coreyyoung/.claude/skills/technical/obsidian/workflows/json-canvas.md` |
+| Session Logging | Appending decisions/outcomes to vault | `read ${CLAUDE_SKILL_DIR}/workflows/session-logging.md` |
+| Knowledge Retrieval | Searching vault before starting work | `read ${CLAUDE_SKILL_DIR}/workflows/knowledge-retrieval.md` |
+| Task Management | Managing Obsidian tasks from sessions | `read ${CLAUDE_SKILL_DIR}/workflows/task-management.md` |
+| Obsidian Markdown | Writing Obsidian-flavored markdown | `read ${CLAUDE_SKILL_DIR}/workflows/obsidian-markdown.md` |
+| Obsidian Bases | Creating .base database files | `read ${CLAUDE_SKILL_DIR}/workflows/obsidian-bases.md` |
+| JSON Canvas | Creating .canvas visual files | `read ${CLAUDE_SKILL_DIR}/workflows/json-canvas.md` |
 
 ## Key Principles
 

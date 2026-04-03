@@ -2,6 +2,7 @@
 name: performance-engineer
 description: Use this agent when you need system performance optimization, scalability analysis, load testing, and making applications faster through profiling, benchmarking, and architectural improvements.
 model: sonnet
+effort: high
 maxTurns: 20
 tools: Read, Edit, Glob, Grep, Bash, WebSearch
 permissionMode: default

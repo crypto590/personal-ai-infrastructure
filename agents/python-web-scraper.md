@@ -2,6 +2,7 @@
 name: python-web-scraper
 description: Use this agent when you need to extract data from websites, build web scraping scripts, parse HTML/XML content, handle dynamic content, deal with rate limiting or anti-scraping measures, process and clean scraped data, or debug scraping issues.
 model: sonnet
+effort: medium
 maxTurns: 20
 tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch, WebFetch
 permissionMode: default
