@@ -7,3 +7,4 @@
 - [reference_transit_sandbox.md](reference_transit_sandbox.md) — TransIT API 3.0: sandbox URLs, auth (deviceID+transactionKey), test harness, client rewrite needed
 - [reference_circle_sandbox.md](reference_circle_sandbox.md) — Circle Programmable Wallets: RSA-OAEP auth, testnet chains, API path patterns, faucet, test harness
 - [reference_anthropic_harness_design.md](reference_anthropic_harness_design.md) — Anthropic harness design: all named patterns (A/B/C), 3-agent roles, sprint contracts, evaluator tuning, anti-patterns, evolution model
+- [feedback_use_bun_not_npx.md](feedback_use_bun_not_npx.md) — Always use bun/bunx, never npm/npx in athlead
