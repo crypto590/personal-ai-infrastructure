@@ -4,7 +4,7 @@ effort: medium
 context: fork
 agent: kb-builder
 argument-hint: "[ingest|compile|query|lint|list|create|status] [topic] [args]"
-description: "LLM-compiled knowledge bases from clipped articles. Ingest from Clippings/, compile wikis, query, lint. Karpathy-style KB workflow."
+description: "LLM-compiled knowledge bases from clipped articles. Ingest from Clippings/, compile wikis, query, lint. Karpathy LLM Wiki pattern with log.md, per-KB schemas, and research-driven lint."
 metadata:
   last_reviewed: 2026-04-02
   review_cycle: 90
@@ -26,11 +26,11 @@ Clip article → Clippings/ → /kb ingest → {topic}/raw/
                                               ↓
                                     /kb compile → wiki/
                                               ↓
-                              _index.md + concepts/ + references/
+                    _index.md + _schema.md + log.md + concepts/ + references/
                                               ↓
-                                    /kb query → outputs/
+                                    /kb query → outputs/ → file back into wiki
                                               ↓
-                                    /kb lint → health report
+                              /kb lint → health report + suggested questions + suggested sources
 ```
 
 ## Key Paths
@@ -43,6 +43,8 @@ Clip article → Clippings/ → /kb ingest → {topic}/raw/
 | `{kb}/wiki/` | LLM-compiled wiki (LLM's domain) |
 | `{kb}/wiki/_index.md` | Master index (auto-maintained) |
 | `{kb}/wiki/_summaries.md` | Source summaries (auto-maintained) |
+| `{kb}/wiki/_schema.md` | Domain-specific compilation conventions (optional, co-evolved) |
+| `{kb}/wiki/log.md` | Chronological activity log (append-only) |
 | `{kb}/wiki/concepts/` | Concept articles with backlinks |
 | `{kb}/wiki/references/` | Per-source summaries |
 | `{kb}/outputs/` | Query results, slides, reports |
@@ -63,6 +65,10 @@ Clip article → Clippings/ → /kb ingest → {topic}/raw/
 1. **Clippings are the inbox** — clip freely, sort later
 2. **Raw is sacred** — LLM never modifies source documents
 3. **Wiki is the LLM's domain** — user reads, LLM writes
-4. **Indexes replace RAG** — auto-maintained `_index.md` and `_summaries.md` let the LLM find what it needs without vector search
-5. **Outputs feed back** — Q&A results can be filed back into the wiki
-6. **Obsidian-native** — `[[wikilinks]]`, YAML frontmatter, callouts, Marp slides
+4. **Wiki is a persistent, compounding artifact** — knowledge compiled once and kept current, not re-derived on every query
+5. **Indexes replace RAG** — auto-maintained `_index.md` and `_summaries.md` let the LLM find what it needs without vector search (scale with qmd when needed)
+6. **Good answers are wiki pages** — Q&A results filed back into the wiki by default, so explorations compound
+7. **Log everything** — append-only `log.md` tracks what happened and when, giving the LLM temporal awareness
+8. **Lint drives research** — lint isn't just a health check, it suggests questions to investigate and sources to find
+9. **Schema co-evolves** — optional per-KB `_schema.md` adapts compilation conventions to each domain
+10. **Obsidian-native** — `[[wikilinks]]`, YAML frontmatter, callouts, Marp slides
