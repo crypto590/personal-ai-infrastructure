@@ -32,15 +32,16 @@ from datetime import datetime, timezone
 SECURITY_CONFIG = {
     "commands": {
         "blocked": [
-            {"pattern": r"rm\s+.*-[a-z]*r[a-z]*f", "description": "rm -rf variants"},
-            {"pattern": r"rm\s+.*-[a-z]*f[a-z]*r", "description": "rm -fr variants"},
-            {"pattern": r"rm\s+--recursive\s+--force", "description": "rm --recursive --force"},
-            {"pattern": r"rm\s+--force\s+--recursive", "description": "rm --force --recursive"},
-            {"pattern": r"rm\s+-r\s+.*-f", "description": "rm -r ... -f (split flags)"},
-            {"pattern": r"rm\s+-f\s+.*-r", "description": "rm -f ... -r (split flags)"},
-            {"pattern": r"chmod\s+777", "description": "World-writable permissions"},
+            # Narrow list: irreversible + zero legitimate use on a dev Mac.
+            # Do NOT add command-pattern regexes for `rm -rf` etc. Those are
+            # regex theatre — bypassable and they block legitimate work.
+            # Use structural path rules (`zero_access`, `no_delete`) instead.
+            {"pattern": r"chmod\s+(-R\s+)?777\s+(/|/\w+|~/?$|\$HOME/?$)",
+             "description": "chmod 777 on root/system paths"},
             {"pattern": r"mkfs\.", "description": "Filesystem format"},
             {"pattern": r":\(\)\{.*\|.*&.*\};:", "description": "Fork bomb"},
+            {"pattern": r"dd\s+.*of=/dev/(disk|sd|nvme|rdisk)",
+             "description": "Raw block device write"},
         ],
         "confirm": [
             {"pattern": r"git\s+push\s+.*--force", "description": "Force push"},
@@ -54,9 +55,19 @@ SECURITY_CONFIG = {
         ],
     },
     "files": {
-        "zero_access": ["~/.ssh/*", "~/.gnupg/*", "~/.aws/credentials", "~/.aws/config"],
+        "zero_access": [
+            "~/.ssh/*",
+            "~/.gnupg/*",
+            "~/.aws/credentials",
+            "~/.aws/config",
+            "~/Library/Keychains/*",
+            "/etc/*",
+            "/private/etc/*",       # macOS symlink alias for /etc
+            "/System/*",
+            "/private/var/root/*",  # root home
+        ],
         "read_only": [".env", ".env.*", "*.pem", "*.key", "*.p12"],
-        "no_delete": ["*.sqlite", "*.db", "*.sqlite3"],
+        "no_delete": ["*.sqlite", "*.db", "*.sqlite3", "*.keychain-db"],
     },
 }
 
@@ -109,14 +120,20 @@ def expand_path(pattern: str) -> str:
 
 
 def check_file_access(tool_name: str, file_path: str, config: dict) -> tuple:
-    """Check file path against access rules. Returns (action, description)."""
+    """Check file path against access rules. Returns (action, description).
+
+    Checks BOTH the raw (expanduser-only) path AND the fully-resolved path so
+    macOS symlinks like `/etc` → `/private/etc` don't bypass the rules.
+    """
     if not file_path:
         return "allow", ""
 
+    raw = str(Path(file_path).expanduser())
     try:
         resolved = str(Path(file_path).expanduser().resolve())
     except Exception:
-        resolved = file_path
+        resolved = raw
+    paths_to_check = {raw, resolved}
 
     basename = Path(file_path).name
     file_rules = config.get("files", {})
@@ -124,17 +141,78 @@ def check_file_access(tool_name: str, file_path: str, config: dict) -> tuple:
     # Zero access: block all operations
     for pattern in file_rules.get("zero_access", []):
         expanded = expand_path(pattern)
-        parent_dir = expanded.rstrip("/*")
-        if fnmatch.fnmatch(resolved, expanded) or resolved.startswith(parent_dir + "/"):
-            return "blocked", f"Access denied: {pattern}"
+        parent_dir = expanded.rstrip("/*").rstrip("/")
+        for p in paths_to_check:
+            if fnmatch.fnmatch(p, expanded) or p.startswith(parent_dir + "/") or p == parent_dir:
+                return "blocked", f"Access denied: {pattern}"
 
     # Read only: block Write/Edit, allow Read
     if tool_name in ("Write", "Edit", "MultiEdit"):
         for pattern in file_rules.get("read_only", []):
             expanded = expand_path(pattern)
-            if fnmatch.fnmatch(basename, pattern) or fnmatch.fnmatch(resolved, expanded):
-                if not (file_path.endswith('.env.sample') or file_path.endswith('.env.example')):
-                    return "blocked", f"Read-only file: {pattern}"
+            for p in paths_to_check:
+                if fnmatch.fnmatch(basename, pattern) or fnmatch.fnmatch(p, expanded):
+                    if not (file_path.endswith('.env.sample') or file_path.endswith('.env.example')):
+                        return "blocked", f"Read-only file: {pattern}"
+
+    return "allow", ""
+
+
+# ---------------------------------------------------------------------------
+# Bash command structural path check
+# ---------------------------------------------------------------------------
+
+def check_bash_path_access(command: str, config: dict) -> tuple:
+    """Structural check on Bash command targets.
+
+    Scans destructive Bash commands (rm/cp/mv/dd/chmod/chown/tee/ln/etc.) for:
+      1. Bare catastrophic targets: / ~ $HOME
+      2. zero_access path prefixes
+
+    Returns (action, description). This runs after command-pattern checks and
+    catches what pure-regex rules miss by caring about WHAT the command
+    touches, not how it spells the operation.
+    """
+    cmd = strip_env_vars(command)
+
+    # Only scan destructive/write commands
+    destructive = re.search(
+        r'\b(rm|cp|mv|dd|chmod|chown|tee|ln|truncate|shred|srm)\b',
+        cmd,
+        re.IGNORECASE,
+    )
+    if not destructive:
+        return "allow", ""
+
+    # Bare catastrophic targets as standalone args
+    catastrophic_patterns = [
+        (r'\brm\s[^#|&;]*?\s/(\s|$|&|;|\|)', "rm targeting /"),
+        (r'\brm\s[^#|&;]*?\s~(\s|$|&|;|\|)', "rm targeting ~"),
+        (r'\brm\s[^#|&;]*?\s\$HOME(\s|$|&|;|\|)', "rm targeting $HOME"),
+    ]
+    for pattern, desc in catastrophic_patterns:
+        if re.search(pattern, cmd):
+            return "blocked", desc
+
+    # Zero-access path substring match (structural, not pattern-based)
+    file_rules = config.get("files", {})
+    for pattern in file_rules.get("zero_access", []):
+        expanded = expand_path(pattern).rstrip("/*").rstrip("/")
+        tilde_form = pattern.rstrip("/*").rstrip("/")
+        candidates = {expanded, tilde_form}
+        # macOS symlink aliases
+        if expanded.startswith("/etc"):
+            candidates.add("/private" + expanded)
+        if expanded.startswith("/var"):
+            candidates.add("/private" + expanded)
+        for cand in candidates:
+            # Path must appear as a standalone token: preceded by whitespace or
+            # start-of-line, followed by whitespace, /, end, or a shell terminator
+            if re.search(
+                r'(^|\s)' + re.escape(cand) + r'(\s|/|$|&|;|\|)',
+                cmd,
+            ):
+                return "blocked", f"Touches zero_access: {pattern}"
 
     return "allow", ""
 
@@ -192,6 +270,13 @@ def main():
             elif action == "alert":
                 log_event(tool_name, "alert", desc)
                 print(f"ALERT: {desc}", file=sys.stderr)
+
+            # Structural: scan command targets against zero_access + catastrophic paths
+            path_action, path_desc = check_bash_path_access(command, config)
+            if path_action == "blocked":
+                log_event(tool_name, "blocked", path_desc)
+                print(f"BLOCKED: {path_desc}", file=sys.stderr)
+                sys.exit(2)
 
             # Check no_delete patterns in rm commands
             stripped = strip_env_vars(command)
