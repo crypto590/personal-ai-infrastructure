@@ -5,7 +5,7 @@ disallowedTools: Edit, Write
 model: sonnet
 effort: high
 maxTurns: 15
-tools: Read, Glob, Grep, Write
+tools: Read, Glob, Grep
 permissionMode: default
 ---
 

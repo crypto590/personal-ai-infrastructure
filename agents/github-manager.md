@@ -4,7 +4,8 @@ description: Orchestrate GitHub workflows, manage PRs, triage issues, coordinate
 model: sonnet
 effort: medium
 maxTurns: 15
-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch
+tools: Read, Glob, Grep, Bash, WebSearch
+disallowedTools: Write, Edit
 permissionMode: default
 ---
 
