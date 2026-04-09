@@ -38,7 +38,7 @@ Video analysis pipeline for automated volleyball analytics, targeting BallTime/H
 - Handles native video input (5s clips)
 - ~$1.50-3.60 per game with 2.5 Pro, 4x cheaper with Flash
 - Free tier covers all PoC testing
-- Stored at `/Users/coreyyoung/Desktop/Projects/athlead/.env` as `GEMINI_API_KEY` (or was `***REDACTED***` - rotate before commit)
+- Stored at `/Users/coreyyoung/Desktop/Projects/athlead/.env` as `GEMINI_API_KEY` (key was rotated — do not commit raw keys)
 
 **Next steps:**
 1. Polish visualize_gemini.py — better jersey-to-trackID matching (currently position-based, weak)
