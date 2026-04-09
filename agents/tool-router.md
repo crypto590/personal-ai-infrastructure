@@ -5,6 +5,7 @@ model: haiku
 effort: low
 maxTurns: 5
 tools: Read, Glob
+disallowedTools: Write, Edit, Bash
 permissionMode: default
 ---
 

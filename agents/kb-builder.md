@@ -1,9 +1,9 @@
 ---
 name: kb-builder
 description: "Compiles raw source documents into an LLM-maintained wiki with concept articles, reference summaries, backlinks, and auto-maintained indexes."
-model: inherit
+model: sonnet 
 effort: high
-maxTurns: 40
+maxTurns: 30
 tools: Read, Write, Edit, Bash, Grep, Glob
 permissionMode: acceptEdits
 ---
