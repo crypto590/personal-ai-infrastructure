@@ -3,12 +3,13 @@ name: workflow
 effort: high
 model: claude-opus-4-6
 context: fork
-argument-hint: "[feature description | phase name]"
+argument-hint: "[--auto] [feature description | phase name]"
 description: |
   Unified development workflow: research > spec > plan > code > verify > review > ship > retro.
   HITL gates at every phase transition. Advisor pattern (Opus advises, Sonnet executes).
   Evaluator loops run until each phase meets its quality threshold.
   Invoke with /workflow to start a new feature, or /workflow <phase> to jump to a phase.
+  Use /workflow --auto for fully autonomous E2E execution (no HITL gates).
 metadata:
   last_reviewed: 2026-04-09
   review_cycle: 60
@@ -38,8 +39,134 @@ Opinionated, gated workflow that takes a feature from idea to shipped code. Ever
 - `/workflow review` — Jump to Review phase
 - `/workflow ship` — Jump to Ship phase
 - `/workflow retro` — Jump to Retro phase
+- `/workflow --auto <feature description>` — Fully autonomous end-to-end execution
 
 When invoked without a phase, ask for the feature description if not provided.
+
+---
+
+## Auto Mode (`--auto`)
+
+Runs the full pipeline autonomously with no HITL gates. The orchestrator self-approves phase transitions when quality thresholds are met and self-fixes when they're not.
+
+### When to use
+
+- Feature requirements are clear and well-scoped
+- You trust the evaluator loops to catch issues
+- You want to hand off a feature and come back to a ready PR
+
+### How it works
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                     AUTO MODE PIPELINE                              │
+│                                                                     │
+│  RESEARCH ──→ SPEC ──→ PLAN ──→ CODE ──→ VERIFY ──→ REVIEW ──→ PR │
+│    0.7        0.8      0.8      0.8       0.85       0.8           │
+│     │          │        │        │          │          │            │
+│     ▼          ▼        ▼        ▼          ▼          ▼            │
+│   eval       eval     eval     eval       eval       eval          │
+│   loop       loop     loop     loop       loop       loop          │
+│  (max 3)   (max 3)  (max 3)  (max 3)   (max 3)   (max 3)         │
+│     │          │        │        │          │          │            │
+│   pass?      pass?   pass?    pass?      pass?     APPROVE?       │
+│   ├─Y→next   ├─Y→     ├─Y→     ├─Y→       ├─Y→       ├─Y→ SHIP   │
+│   └─N→fix    └─N→     └─N→     └─N→       └─N→       └─N→ fix    │
+│      └→retry    ...     ...     ...        ...          └→re-review│
+│         └→HALT if 3 failures                   └→HALT if 3 fails  │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Auto mode rules
+
+1. **Quality thresholds are non-negotiable.** Same thresholds as gated mode. No lowering them because a human isn't watching.
+
+2. **Evaluator loops are the safety net.** Each phase runs its evaluator loop (max 3 iterations). If a phase fails 3 times, the pipeline HALTs and reports what went wrong. It does NOT push through bad work.
+
+3. **Self-fix before self-approve.** When a phase fails its threshold:
+   - Identify the failing criteria
+   - Spawn a fix agent targeting those specific issues
+   - Re-score after the fix
+   - Only advance if the threshold is met
+
+4. **Review is the final boss.** The review phase (Phase 6) runs the full `review` skill with scoring rubric. In auto mode:
+   - APPROVE or APPROVE WITH NITS → proceed to ship
+   - CHANGES REQUESTED → route issues to code agent, re-run review (max 3 cycles)
+   - HARD NO → HALT immediately, report to human
+
+5. **Ship stops before push.** Auto mode opens the PR but does NOT push to remote or merge. The human reviews the PR before it goes anywhere.
+
+6. **HALT conditions** — Auto mode stops and reports to human when:
+   - Any phase fails 3 evaluator iterations
+   - Review returns HARD NO
+   - Security audit finds critical vulnerabilities
+   - Build or tests fail after 3 fix attempts
+   - Merge conflict that can't be auto-resolved
+   - An architectural decision with no clear answer (ambiguous spec)
+
+7. **No retro in auto mode.** Retro requires human reflection. Auto mode ends at PR opened.
+
+### Auto mode deliverables
+
+When auto mode completes successfully, it presents:
+
+```markdown
+## Auto Workflow Complete: [feature]
+
+### Pipeline Summary
+| Phase    | Threshold | Score | Iterations | Status |
+|----------|-----------|-------|------------|--------|
+| Research | 0.70      | 0.XX  | N          | PASS   |
+| Spec     | 0.80      | 0.XX  | N          | PASS   |
+| Plan     | 0.80      | 0.XX  | N          | PASS   |
+| Code     | 0.80      | 0.XX  | N          | PASS   |
+| Verify   | 0.85      | 0.XX  | N          | PASS   |
+| Review   | 0.80      | 0.XX  | N          | PASS   |
+
+### Artifacts Created
+- Spec: `docs/specs/<feature-slug>.md`
+- Feature registry: `docs/feature-registry/<feature-slug>.json`
+- PR: #NNN (draft, not pushed)
+
+### Review Verdict: APPROVE / APPROVE WITH NITS
+[Review summary]
+
+### Nits / Informational Items
+[Any non-blocking items the human should know about]
+
+### Decisions Made Autonomously
+[List every architectural or ambiguous decision the orchestrator made without human input, with rationale — so the human can audit]
+
+### Ready for: `git push` + human PR review
+```
+
+### Critical: Autonomous Decision Log
+
+In auto mode, every decision that would have been a HITL gate in normal mode gets logged:
+
+```markdown
+### Decision Log
+1. [RESEARCH] Chose React Server Components over client-side fetching — docs show RSC is the recommended pattern for Next.js 15+ data fetching
+2. [SPEC] Set success criteria: LCP < 2.5s, form submission < 500ms — based on Core Web Vitals "good" thresholds
+3. [PLAN] Split into 4 vertical slices instead of horizontal layers — feature touches all layers but each slice is independently testable
+4. [CODE] Used useActionState over manual useState — React 19 docs recommend this for form state (source: react.dev/reference/react/useActionState)
+5. [VERIFY] npm audit found 1 moderate vulnerability in dev dependency — triaged as non-blocking per security-and-hardening triage tree
+```
+
+This log is the human's audit trail. Every entry must include the rationale so the human can disagree and course-correct before merging.
+
+### Auto mode vs gated mode
+
+| Behavior | Gated (default) | Auto (`--auto`) |
+|---|---|---|
+| HITL gates | Every phase transition | None (evaluator loops only) |
+| Phase advancement | Human approves | Self-approve if threshold met |
+| Failed threshold | Escalate to human | Self-fix, retry (max 3), HALT if still failing |
+| Review verdict | Human reads review | Auto-advance on APPROVE, HALT on HARD NO |
+| Ship | Human confirms PR | Opens PR, does NOT push or merge |
+| Retro | Human reflects | Skipped |
+| Decision audit | Real-time questions | Post-hoc decision log |
+| Ambiguous requirements | AskUserQuestion | Make best judgment, log it, HALT if truly unclear |
 
 ---
 
