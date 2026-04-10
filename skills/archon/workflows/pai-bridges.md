@@ -155,6 +155,60 @@ nodes:
 
 ---
 
+## Workflow Skill → Full 8-Phase DAG
+
+Ports the `workflow/` skill's complete 8-phase lifecycle into a single Archon DAG. This is the big one — it turns your unified workflow skill into something Archon can execute deterministically, in parallel, across git worktrees.
+
+**Drop-in file:** `skills/archon/templates/pai-workflow.yaml`
+
+**What it maps:**
+
+| `workflow` Phase | Archon Nodes | Parallelism | Threshold |
+|---|---|---|---|
+| 1. Research | `research-intake` → (`research-codebase` ∥ `research-external`) → `research-synthesize` | 2 agents in parallel | 0.7 |
+| 2. Spec | `spec-draft` (self-scoring loop) | serial | 0.8 |
+| 3. Plan | (`plan-product` ∥ `plan-design`) → `plan-engineering` | 2 perspectives in parallel | 0.8 |
+| 4. Code | `code-implement` (loop) → `code-gate-tests` (bash) | serial | 0.8 + bash gate |
+| 5. Verify | (`verify-qa` ∥ `verify-security` ∥ `verify-performance`) → `verify-consolidate` | 3 audits in parallel | 0.85 |
+| 6. Review | (`review-code` ∥ `review-impact`) → `review-decide` | 2 reviewers in parallel | 0.8 |
+| 7. Ship | `ship-pipeline` (delegates to existing `ship/` skill) | serial | — |
+| 8. Retro | `retro-analysis` → `gate-retro` | serial | — |
+
+Every phase transition has a `gate-<phase>` interactive node (the HITL gate). Quality thresholds live inside the synthesize/consolidate prompts as self-scoring instructions with max-3 iteration loops.
+
+**Gated vs auto mode:**
+- **Gated** (default): keep `interactive: true` on all `gate-*` nodes
+- **Auto** (`workflow --auto`): remove `interactive: true` from gates, delete `gate-retro`, let loops handle correction
+
+**What you gain by running it through Archon:**
+- Git worktree isolation — run 3 features through the 8-phase pipeline in parallel
+- Trigger from Slack/Telegram/GitHub webhooks instead of only from Claude Code
+- Fire-and-forget: start the workflow on a feature, come back to a draft PR
+- Deterministic phase transitions — no drift in which phase runs next
+
+**What doesn't port cleanly:**
+- **Advisor pattern** — Archon runs a single model per workflow; you lose Opus-advises/Sonnet-executes cost optimization
+- **Anti-rationalization tables** — those are prose aimed at Claude's reasoning; they stay in the skill file as the human-readable reference
+- **Decision log** — auto mode's audit trail needs to be built inside prompts (ask the AI to log every autonomous decision to a file)
+
+**Usage:**
+
+```bash
+# Copy into a project's .archon directory
+mkdir -p /path/to/project/.archon/workflows
+cp ~/.claude/skills/archon/templates/pai-workflow.yaml \
+   /path/to/project/.archon/workflows/
+
+# Run it
+cd /path/to/project
+claude
+# "Use archon to run pai-workflow for adding dark mode"
+```
+
+The skill file (`skills/workflow/SKILL.md`) remains the canonical reference for the *why* behind each phase. The YAML is the executable version.
+
+---
+
 ## Issue → PR (End-to-End)
 
 Complete pipeline: GitHub issue to merged PR, using PAI skills at each stage.

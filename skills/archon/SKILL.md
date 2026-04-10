@@ -22,6 +22,7 @@ Workflow engine that makes AI-assisted coding deterministic and repeatable. Defi
 | Install Archon and configure it | `workflows/setup.md` |
 | Author custom YAML workflows | `workflows/workflow-authoring.md` |
 | Bridge PAI skills into Archon workflows | `workflows/pai-bridges.md` |
+| Run the full 8-phase PAI workflow in Archon | `templates/pai-workflow.yaml` |
 | Full YAML schema and node reference | `context/knowledge/platforms/archon.md` |
 
 ---

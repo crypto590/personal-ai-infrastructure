@@ -1,0 +1,363 @@
+# pai-workflow.yaml
+#
+# Archon execution of the PAI workflow skill's 8-phase development lifecycle.
+# Source: skills/workflow/SKILL.md
+#
+# Phases: research → spec → plan → code → verify → review → ship → retro
+# Thresholds: 0.7 / 0.8 / 0.8 / 0.8 / 0.85 / 0.8 / (ship) / (retro)
+#
+# This is the GATED variant (default mode in the workflow skill).
+# For --auto mode: remove all `interactive: true` from gate-* nodes and delete gate-retro.
+
+nodes:
+  # ============================================================
+  # PHASE 1: RESEARCH — understand problem space
+  # Threshold: 0.7 | Parallel codebase + external research
+  # ============================================================
+  - id: research-intake
+    prompt: |
+      PHASE 1/8: RESEARCH — Intake
+      Parse the feature request. Identify scope, constraints, and initial open questions.
+      Output: one-paragraph problem statement.
+
+  - id: research-codebase
+    depends_on: [research-intake]
+    prompt: |
+      PHASE 1/8: RESEARCH — Codebase agent (parallel with external)
+      Reference: skills/research/SKILL.md, skills/source-driven-development/SKILL.md,
+                 skills/gitnexus-exploring/SKILL.md
+      Tasks:
+      - Existing patterns relevant to this feature
+      - Adjacent code and conventions to follow
+      - Dependencies and versions from lockfiles
+      Output: "Codebase Context" section of the research summary.
+
+  - id: research-external
+    depends_on: [research-intake]
+    prompt: |
+      PHASE 1/8: RESEARCH — External docs agent (parallel with codebase)
+      Reference: skills/research/SKILL.md, skills/defuddle/SKILL.md
+      Tasks:
+      - Framework capabilities (with doc citations, NOT training data)
+      - Library options evaluated
+      - Known constraints and limitations
+      Output: "Technology Assessment" section of the research summary.
+
+  - id: research-synthesize
+    depends_on: [research-codebase, research-external]
+    prompt: |
+      PHASE 1/8: RESEARCH — Synthesize the final research summary.
+
+      Produce sections: Codebase Context, Technology Assessment, Recommendations (with
+      rationale), Open Questions.
+
+      Self-score against threshold 0.7:
+      - Cites sources for every framework claim
+      - Identifies at least 3 codebase patterns
+      - Lists alternatives considered and rejected
+      If score < 0.7, identify gaps and re-run. Max 3 iterations.
+    loop:
+      until: ALL_TASKS_COMPLETE
+      fresh_context: false
+
+  - id: gate-research
+    depends_on: [research-synthesize]
+    prompt: |
+      HITL GATE — Present the research summary.
+      Ask: "Does this research cover the problem space? Any areas to dig deeper?"
+    loop:
+      until: APPROVED
+      interactive: true
+
+  # ============================================================
+  # PHASE 2: SPEC — concrete, testable specification
+  # Threshold: 0.8 | Single agent + self-review
+  # ============================================================
+  - id: spec-draft
+    depends_on: [gate-research]
+    prompt: |
+      PHASE 2/8: SPEC
+      Reference: skills/spec-driven-development/SKILL.md
+
+      Write to docs/specs/<feature-slug>.md covering:
+      1. Objective + success criteria (concrete, measurable — e.g. "LCP < 2.5s")
+      2. Tech stack with exact versions from lockfiles
+      3. Project structure (where new code goes)
+      4. Code style (one example matching codebase conventions)
+      5. Testing strategy
+      6. Boundaries: Always / Ask First / Never
+      7. Not Doing list (explicit scope exclusions)
+
+      Self-score against threshold 0.8:
+      - Success criteria are testable (not "fast" but "X ms")
+      - All 3 boundary tiers populated
+      - Not Doing list is non-empty
+      - Assumptions surfaced explicitly
+      If score < 0.8, fix gaps. Max 3 iterations.
+    loop:
+      until: ALL_TASKS_COMPLETE
+      fresh_context: false
+
+  - id: gate-spec
+    depends_on: [spec-draft]
+    prompt: |
+      HITL GATE — Present the spec. Surface assumptions explicitly.
+      Ask: "Does this capture what you want? Any scope changes?"
+    loop:
+      until: APPROVED
+      interactive: true
+
+  # ============================================================
+  # PHASE 3: PLAN — ordered task DAG with dependencies
+  # Threshold: 0.8 | Parallel product + design, then engineering synthesis
+  # ============================================================
+  - id: plan-product
+    depends_on: [gate-spec]
+    prompt: |
+      PHASE 3/8: PLAN — Product perspective (parallel)
+      Reference: skills/plan-product/SKILL.md
+      - User stories and acceptance criteria
+      - Edge cases and error states
+      - Success metrics
+
+  - id: plan-design
+    depends_on: [gate-spec]
+    prompt: |
+      PHASE 3/8: PLAN — Design perspective (parallel)
+      Reference: skills/plan-design/SKILL.md
+      - Component hierarchy and layout
+      - Interaction patterns
+      - Accessibility requirements
+
+  - id: plan-engineering
+    depends_on: [plan-product, plan-design]
+    prompt: |
+      PHASE 3/8: PLAN — Engineering synthesis
+      Reference: skills/plan/SKILL.md, skills/plan-eng/SKILL.md
+
+      Produce docs/feature-registry/<feature-slug>.json + task breakdown:
+      - Tasks ordered by dependency (valid DAG, no cycles)
+      - Each task: description, acceptance criteria, verify step, files touched
+      - Size: XS/S/M/L (no XL — break down further)
+      - Risk items with mitigations
+      - Vertical slices preferred over horizontal layers
+
+      Self-score against threshold 0.8:
+      - No XL tasks
+      - Every task has acceptance criteria + verify step
+      - No task touches more than ~5 files
+      - First task is implementable without waiting
+      If score < 0.8, fix gaps. Max 3 iterations.
+    loop:
+      until: ALL_TASKS_COMPLETE
+      fresh_context: false
+
+  - id: gate-plan
+    depends_on: [plan-engineering]
+    prompt: |
+      HITL GATE — Present the task list (no time estimates).
+      Ask: "Does this breakdown make sense? Any tasks missing or mis-scoped?"
+    loop:
+      until: APPROVED
+      interactive: true
+
+  # ============================================================
+  # PHASE 4: CODE — implement tasks one at a time
+  # Threshold: 0.8 | Source-driven patterns + deterministic test gate
+  # ============================================================
+  - id: code-implement
+    depends_on: [gate-plan]
+    prompt: |
+      PHASE 4/8: CODE — Implement tasks from the plan
+      Reference: skills/source-driven-development/SKILL.md,
+                 skills/debugging-and-error-recovery/SKILL.md
+      Platform skills: ios-swift/, kotlin-android/, vercel-react-best-practices/
+
+      Per-task cycle:
+      1. Read the task from the plan
+      2. Detect framework versions from lockfiles
+      3. Fetch relevant docs (source-driven, NOT training data)
+      4. Implement following documented patterns
+      5. Write tests (must fail without change, pass with it)
+      6. Run tests. Pass → commit. Fail → debugging-and-error-recovery triage.
+      7. Next task.
+
+      Hard limit: no more than 100 lines of new code without running tests.
+      Continue until all plan tasks are complete.
+    loop:
+      until: ALL_TASKS_COMPLETE
+      fresh_context: true
+
+  - id: code-gate-tests
+    depends_on: [code-implement]
+    bash: |
+      # Deterministic gate — workflow halts if any step fails
+      turbo run build && \
+      turbo run lint && \
+      turbo run check-types && \
+      turbo run test
+
+  - id: gate-code
+    depends_on: [code-gate-tests]
+    prompt: |
+      HITL GATE — Present diff summary, source citations, test results.
+      Ask: "Ready to continue to verification, or changes needed?"
+    loop:
+      until: APPROVED
+      interactive: true
+
+  # ============================================================
+  # PHASE 5: VERIFY — QA + security + performance (parallel)
+  # Threshold: 0.85 | Three parallel audit agents + consolidation
+  # ============================================================
+  - id: verify-qa
+    depends_on: [gate-code]
+    prompt: |
+      PHASE 5/8: VERIFY — QA agent (parallel)
+      Reference: skills/qa/SKILL.md
+      Run /qa report — produce 8-category health score.
+
+  - id: verify-security
+    depends_on: [gate-code]
+    prompt: |
+      PHASE 5/8: VERIFY — Security agent (parallel)
+      Reference: skills/security-and-hardening/SKILL.md
+      - OWASP Top 10 checklist
+      - npm audit
+      - Secret scanning
+      - Input validation at boundaries
+      Flag findings with severity.
+
+  - id: verify-performance
+    depends_on: [gate-code]
+    prompt: |
+      PHASE 5/8: VERIFY — Performance agent (parallel)
+      Reference: skills/performance-optimization/SKILL.md
+      - Bundle size delta
+      - N+1 queries
+      - Core Web Vitals impact (if applicable)
+
+  - id: verify-consolidate
+    depends_on: [verify-qa, verify-security, verify-performance]
+    prompt: |
+      PHASE 5/8: VERIFY — Consolidate findings
+
+      Produce Verification Report with QA Health Score, Security Audit, Performance
+      Check, and Issues Found (Critical vs Informational).
+
+      Self-score against threshold 0.85:
+      - No critical security issues
+      - QA health > 0.8
+      - No N+1 queries introduced
+
+      If threshold not met, attempt auto-fixes for safe issues (dead code, missing
+      indexes, lint). Re-score. Max 3 iterations before escalating critical issues.
+    loop:
+      until: ALL_TASKS_COMPLETE
+      fresh_context: false
+
+  - id: gate-verify
+    depends_on: [verify-consolidate]
+    prompt: |
+      HITL GATE — Present the verification report. Flag any critical issues.
+      Ask: "Approve for review, or fix issues first?"
+    loop:
+      until: APPROVED
+      interactive: true
+
+  # ============================================================
+  # PHASE 6: REVIEW — code review with verdict + fix loop
+  # Threshold: 0.8 | 2-pass review + parallel impact analysis
+  # ============================================================
+  - id: review-code
+    depends_on: [gate-verify]
+    prompt: |
+      PHASE 6/8: REVIEW — Primary code review (parallel with impact)
+      Reference: skills/review/SKILL.md
+
+      Run 2-pass review:
+      - Pass 1 (Critical): security, data loss, race conditions, contracts, crash
+        paths, unbounded loops
+      - Pass 2 (Informational): performance, clarity, test gaps, accessibility, DRY
+
+      Score against 8-criterion weighted rubric. Issue verdict:
+      APPROVE / APPROVE WITH NITS / CHANGES REQUESTED / HARD NO
+
+  - id: review-impact
+    depends_on: [gate-verify]
+    prompt: |
+      PHASE 6/8: REVIEW — Impact analysis (parallel with primary review)
+      Reference: skills/gitnexus-pr-review/SKILL.md
+      Blast radius assessment, dependency tracing, risk rating.
+
+  - id: review-decide
+    depends_on: [review-code, review-impact]
+    prompt: |
+      PHASE 6/8: REVIEW — Consolidate + fix loop
+
+      If verdict is CHANGES REQUESTED:
+      - Route critical issues back to a code agent for fixing
+      - Re-run review (max 2 review iterations)
+      - If still failing after 2 iterations, halt and escalate
+
+      If APPROVE or APPROVE WITH NITS → proceed.
+      If HARD NO → halt immediately.
+
+      Threshold: weighted average >= 0.8 on 8-criterion rubric.
+    loop:
+      until: ALL_TASKS_COMPLETE
+      fresh_context: false
+
+  - id: gate-review
+    depends_on: [review-decide]
+    prompt: |
+      HITL GATE — Present review verdict + scores.
+      Ask: "Ready to ship?" or "Agent addressed N issues, M remain — your call."
+    loop:
+      until: APPROVED
+      interactive: true
+
+  # ============================================================
+  # PHASE 7: SHIP — version, changelog, PR
+  # Uses existing ship/ skill pipeline
+  # ============================================================
+  - id: ship-pipeline
+    depends_on: [gate-review]
+    prompt: |
+      PHASE 7/8: SHIP
+      Reference: skills/ship/SKILL.md, skills/graphite/SKILL.md
+
+      Execute the ship pipeline:
+      1. Detect base branch
+      2. Merge upstream
+      3. Run turbo pipeline (build/lint/type-check/test)
+      4. Skip pre-landing review (already done in Phase 6)
+      5. Version bump (PATCH auto, MINOR/MAJOR confirm)
+      6. Generate changelog
+      7. Create logical commits or stacked PRs
+      8. Open PR (do NOT push to remote — human reviews first)
+
+  # ============================================================
+  # PHASE 8: RETRO — lessons learned (skipped in --auto mode)
+  # ============================================================
+  - id: retro-analysis
+    depends_on: [ship-pipeline]
+    prompt: |
+      PHASE 8/8: RETRO
+      Reference: skills/retro/SKILL.md, skills/memory/SKILL.md
+
+      Produce retro with:
+      - What went well
+      - What could improve
+      - Lessons for next time
+      - Skill updates needed
+
+  - id: gate-retro
+    depends_on: [retro-analysis]
+    prompt: |
+      HITL GATE — Present retro summary.
+      Ask: "Anything to add? Should any lessons become permanent memories?"
+      Save approved lessons via /remember.
+    loop:
+      until: APPROVED
+      interactive: true
