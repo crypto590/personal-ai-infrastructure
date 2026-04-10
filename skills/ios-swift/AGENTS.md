@@ -1626,4 +1626,15 @@ Use `AsyncStream.makeStream(of:)` factory. Set buffering policy for high-through
 - **Isolated deinit:** Runs on actor for safe teardown.
 - **Task naming:** Debug aid: `Task(name: "FetchUser") { }`.
 - **Priority escalation:** `task.escalatePriority(to: .high)` — usually automatic.
+
+## 7.5 Strict Concurrency Diagnostics
+
+| Error | Fix |
+|---|---|
+| "Sending 'x' risks causing data races" | Region-based isolation → `sending` params → `Sendable` conformance → `nonisolated(nonsending)` → `@unchecked Sendable` (last resort) |
+| "Static property 'x' is not concurrency-safe" | `@MainActor` annotation, or `Sendable` for immutable types |
+| "Capture of 'x' with non-sendable type in @Sendable closure" | Make type `Sendable`, pass as parameter, keep on caller's actor, or use `sending` |
+| "Conformance crosses into main actor-isolated code" | Remove type isolation or use isolated conformances (Swift 6.2) |
+| "Expression is 'async' but not marked with 'await'" | Add `await` or wrap in `Task {}` |
+| "Main actor-isolated conformance in nonisolated context" | Move usage onto matching actor or remove conformance isolation |
 ```
