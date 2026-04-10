@@ -1,7 +1,7 @@
 ---
 name: ios-swift
 effort: high
-description: "Unified iOS/Swift/SwiftUI development. MVC architecture, code review, SwiftLint, accessibility, concurrency, build optimization, TestFlight, and App Store distribution."
+description: "Unified iOS/Swift/SwiftUI development. MVC architecture, code review, SwiftLint, accessibility, concurrency, SwiftData, build optimization, TestFlight, and App Store distribution."
 metadata:
   last_reviewed: 2026-03-17
   review_cycle: 90
@@ -56,6 +56,8 @@ Specialized review agents for iOS code quality and compliance.
 | Accessibility | [review/accessibility.md](review/accessibility.md) | VoiceOver, Assistive Access, contrast, tap targets, system preferences |
 | Liquid Glass | [review/liquid-glass.md](review/liquid-glass.md) | Surface appropriateness, single layer rule, performance, API usage |
 | Concurrency | [review/concurrency.md](review/concurrency.md) | Actor isolation, @concurrent, data races, Sendable, Swift 6.2 |
+| Concurrency Patterns | [review/concurrency-patterns.md](review/concurrency-patterns.md) | Grep hotspots, bug patterns, async streams, Swift 6.2 features |
+| SwiftUI Tips | [review/swiftui-tips.md](review/swiftui-tips.md) | Deprecated APIs, view optimization, HIG design, modern Swift idioms |
 | Pattern Validation | [review/pattern-validation.md](review/pattern-validation.md) | MVC compliance, controller/service/view/model validation, layer separation |
 | API Research | [review/api-research.md](review/api-research.md) | Apple API investigation, documentation sources, availability checks |
 
@@ -63,6 +65,20 @@ Specialized review agents for iOS code quality and compliance.
 - Critical: Block PR (data races, missing MainActor, missing VoiceOver labels, glass on content)
 - Warning: Address before shipping (missing task cancellation, performance concerns)
 - Info: Optional improvements (optimization suggestions)
+
+---
+
+### SwiftData
+
+Comprehensive SwiftData reference covering model rules, predicate gotchas, CloudKit constraints, and iOS 18+/26+ features. Adapted from [twostraws/SwiftData-Agent-Skill](https://github.com/twostraws/SwiftData-Agent-Skill) (Paul Hudson, MIT).
+
+| Topic | File | Summary |
+|-------|------|---------|
+| Core Rules | [swiftdata/core-rules.md](swiftdata/core-rules.md) | Autosaving, ModelContext, relationships, @Transient, @Query, migrations |
+| Predicates | [swiftdata/predicates.md](swiftdata/predicates.md) | String matching, unsupported operations, runtime crash gotchas |
+| CloudKit | [swiftdata/cloudkit.md](swiftdata/cloudkit.md) | Unique constraints, optional requirements, eventual consistency |
+| Indexing | [swiftdata/indexing.md](swiftdata/indexing.md) | iOS 18+ #Index, single and compound indexes |
+| Class Inheritance | [swiftdata/class-inheritance.md](swiftdata/class-inheritance.md) | iOS 26+ @Model subclassing, querying, typecasting in predicates |
 
 ---
 
@@ -128,8 +144,12 @@ Display UI or handle user input
   -> Create View (SwiftUI, delegates to Controller)
   -> See: architecture/views.md
 
+Using SwiftData for persistence
+  -> Follow SwiftData rules and predicate gotchas
+  -> See: swiftdata/*.md
+
 Reviewing iOS code for PR
-  -> Run review checklists
+  -> Run review checklists (includes SwiftUI tips, concurrency patterns)
   -> See: review/*.md
 
 Running quality checks before commit
