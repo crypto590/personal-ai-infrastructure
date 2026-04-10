@@ -128,6 +128,125 @@ query[kSecUseDataProtectionKeychain as String] = true
 
 ---
 
+## Top 10 AI-Generated Security Mistakes
+
+These are the most common insecure patterns AI coding assistants produce:
+
+| # | Anti-Pattern | Severity |
+|---|---|---|
+| 1 | Storing tokens/secrets in UserDefaults | CRITICAL |
+| 2 | Hardcoded API keys in source | CRITICAL |
+| 3 | `LAContext.evaluatePolicy()` as sole auth gate (bypassable with Frida/objection) | CRITICAL |
+| 4 | Ignoring `SecItem*` return codes | HIGH |
+| 5 | Wrong or missing data protection class (`kSecAttrAccessible`) | HIGH |
+| 6 | Nonce reuse in AES-GCM (catastrophic — enables plaintext recovery) | CRITICAL |
+| 7 | MD5/SHA-1 for security purposes (use SHA-256+) | HIGH |
+| 8 | Logging sensitive data (`print(token)`, `os_log(password)`) | HIGH |
+| 9 | Not clearing Keychain on first launch after reinstall | MEDIUM |
+| 10 | Non-cryptographic RNG for security (`Int.random()` instead of `SecRandomCopyBytes`) | HIGH |
+
+---
+
+## Biometric Auth: The Boolean Gate Vulnerability
+
+`LAContext.evaluatePolicy()` returns a Bool that lives in app memory. Attackers with Frida/objection can hook the callback and flip `false` → `true`, bypassing biometrics entirely.
+
+**Secure pattern:** Store the actual secret in the Keychain with `SecAccessControl` + Secure Enclave. The OS enforces biometric verification at the hardware level — there's no Bool to bypass:
+
+```swift
+// 1. Create access control
+let access = SecAccessControlCreateWithFlags(
+    nil,
+    kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly,
+    .biometryCurrentSet,  // Invalidates if biometrics change
+    nil
+)!
+
+// 2. Store secret with biometric protection
+let query: [String: Any] = [
+    kSecClass as String: kSecClassGenericPassword,
+    kSecAttrService as String: "com.app.auth",
+    kSecAttrAccount as String: "session-token",
+    kSecAttrAccessControl as String: access,
+    kSecValueData as String: tokenData
+]
+SecItemAdd(query as CFDictionary, nil)
+
+// 3. Retrieve — OS prompts biometric automatically
+let searchQuery: [String: Any] = [
+    kSecClass as String: kSecClassGenericPassword,
+    kSecAttrService as String: "com.app.auth",
+    kSecAttrAccount as String: "session-token",
+    kSecReturnData as String: true
+]
+var result: AnyObject?
+let status = SecItemCopyMatching(searchQuery as CFDictionary, &result)
+// If user fails biometric, status != errSecSuccess — no Bool to bypass
+```
+
+**Biometric flag selection:**
+- `.biometryCurrentSet` — Invalidates when biometrics change (most secure for credentials)
+- `.biometryAny` — Survives biometric enrollment changes
+- `.userPresence` — Accepts biometric OR passcode fallback
+
+---
+
+## Credential Lifecycle
+
+### Logout — Clear Everything
+
+```swift
+actor CredentialManager {
+    func clearAll() throws {
+        let secClasses = [
+            kSecClassGenericPassword,
+            kSecClassInternetPassword,
+            kSecClassCertificate,
+            kSecClassKey
+        ]
+        for secClass in secClasses {
+            let query: [String: Any] = [kSecClass as String: secClass]
+            SecItemDelete(query as CFDictionary)
+            // Ignore errSecItemNotFound — item may not exist
+        }
+    }
+}
+```
+
+### Token Refresh — Atomic Rotation
+
+Never delete old token before storing new one. Use update-in-place to avoid window where no token exists:
+
+```swift
+func rotateToken(service: String, newToken: Data) throws {
+    let query: [String: Any] = [
+        kSecClass as String: kSecClassGenericPassword,
+        kSecAttrService as String: service
+    ]
+    let attributes: [String: Any] = [
+        kSecValueData as String: newToken
+    ]
+    let status = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
+    guard status == errSecSuccess else {
+        throw KeychainError.unhandledError(status: status)
+    }
+}
+```
+
+### First Launch — Clear Stale Keychain
+
+Keychain survives app reinstall. On first launch, clear stale credentials:
+
+```swift
+let hasLaunchedKey = "hasLaunchedBefore"
+if !UserDefaults.standard.bool(forKey: hasLaunchedKey) {
+    try? credentialManager.clearAll()
+    UserDefaults.standard.set(true, forKey: hasLaunchedKey)
+}
+```
+
+---
+
 ## CryptoKit Algorithm Selection
 
 | Purpose | Algorithm | Notes |
