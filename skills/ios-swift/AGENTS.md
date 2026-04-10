@@ -1445,3 +1445,185 @@ actor MockMyService: MyServiceProtocol {
     }
 }
 ```
+
+---
+
+# Part 5: SwiftData
+
+Adapted from [twostraws/SwiftData-Agent-Skill](https://github.com/twostraws/SwiftData-Agent-Skill) (Paul Hudson, MIT).
+
+## 5.1 Core Rules
+
+- SwiftData autosaves unpredictably. Call `save()` explicitly when correctness matters.
+- `ModelContext` and model instances must **never** cross actor boundaries. `ModelContainer` and `PersistentIdentifier` are `Sendable`. Send the identifier and re-fetch in the destination context.
+- Place `@Relationship` on **one side only**. Always specify the exact inverse explicitly.
+- Always set an explicit delete rule (default `.nullify` can orphan objects or crash on non-optional properties).
+- Persistent identifiers are temporary before first save (start with "t"). Save before relying on an ID.
+- Do not use property name `description` in `@Model` classes.
+- Do not add property observers to `@Model` classes — silently ignored.
+- `@Transient` properties must have a default value, reset on every fetch. Prefer computed properties for derived values.
+- `@Query` only works inside SwiftUI views.
+- Set `relationshipKeyPathsForPrefetching` and `propertiesToFetch` on `FetchDescriptor` for optimization.
+- Only one `#Unique` per model: `#Unique<User>([\.email], [\.username])`.
+- Enum properties must conform to `Codable`. Enums with associated values are supported.
+- Always have a migration schema, even for lightweight migrations.
+
+## 5.2 Predicates
+
+SwiftData predicates support a subset of Swift. Some unsupported operations crash at **runtime**, not compile time.
+
+**String matching:** Use `localizedStandardContains()`, never `lowercased().contains()`.
+**Prefix matching:** Use `starts(with:)` — `hasPrefix()` and `hasSuffix()` are not supported.
+
+**Unsupported (compile error):** `hasSuffix()`, `lowercased()`, `map()`, `reduce()`, `count(where:)`, `first`, custom operators.
+
+**Dangerous (runtime crash):**
+- `$0.cast.isEmpty == false` crashes — use `!$0.cast.isEmpty`
+- Computed properties, `@Transient` properties, custom `Codable` structs in predicates
+- Regular expressions in predicates
+
+## 5.3 CloudKit Constraints
+
+Only applies when using SwiftData with CloudKit:
+- **Never** use `@Attribute(.unique)` or `#Unique` — not supported, breaks local data too.
+- All properties must have default values or be optional.
+- All relationships must be optional.
+- Design for eventual consistency.
+
+## 5.4 Indexing (iOS 18+)
+
+```swift
+@Model class Article {
+    #Index<Article>([\.type], [\.author])
+    // Compound: #Index<Article>([\.type], [\.type, \.author])
+}
+```
+
+Small write-time cost. Good for frequently queried data; bad for write-heavy data (logging).
+
+## 5.5 Class Inheritance (iOS 26+)
+
+Both parent and child classes must use `@Model`. Children must be `@available(iOS 26, *)` even if iOS 26 is the minimum target. List both parent and child classes in the model container schema.
+
+Filter with `is` in predicates, typecast with `as?`. Avoid deep subclassing hierarchies.
+
+---
+
+# Part 6: SwiftUI Tips and Modern Patterns
+
+Adapted from [twostraws/SwiftUI-Agent-Skill](https://github.com/twostraws/SwiftUI-Agent-Skill) (Paul Hudson, MIT).
+
+## 6.1 Deprecated API Replacements
+
+| Deprecated | Modern |
+|---|---|
+| `foregroundColor()` | `foregroundStyle()` |
+| `cornerRadius()` | `clipShape(.rect(cornerRadius:))` |
+| `tabItem()` | `Tab` API |
+| `.navigationBarLeading/Trailing` | `.topBarLeading/Trailing` |
+| Single-parameter `onChange()` | Two-parameter variant |
+| `PreviewProvider` | `#Preview` macro |
+| `GeometryReader` (for sizing) | `containerRelativeFrame()`, `visualEffect()`, `Layout` |
+| `ObservableObject`/`@Published` | `@Observable` |
+| `@StateObject`/`@ObservedObject` | `@State`/`@Bindable`/`@Environment` |
+| `sensoryFeedback()` replaces UIKit haptic APIs |
+
+Use `@Entry` macro for custom `EnvironmentValues`, `FocusValues`, `Transaction`, `ContainerValues`.
+iOS 26+: native `WebView` (import WebKit). `import Combine` now required explicitly for `ObservableObject`.
+
+## 6.2 View Performance
+
+- Ternary over if/else for modifier toggles — avoids `_ConditionalContent`.
+- Break views into dedicated View structs in separate files, not computed properties.
+- One type per Swift file.
+- Avoid `AnyView` — use `@ViewBuilder`, `Group`, or generics.
+- Assume `body` is called frequently. Move sorting/filtering/transforms out.
+- Keep view initializers small. No non-trivial work.
+- Use `LazyVStack`/`LazyHStack` for large data sets.
+- Prefer `task()` over `onAppear()` for async work.
+- Avoid escaping `@ViewBuilder` closures; store built view results.
+
+## 6.3 Design Compliance (HIG)
+
+- Place standard design constants (fonts, spacing, colors, corner radii, animation timings) into a shared enum.
+- Never use `UIScreen.main.bounds`. Use `containerRelativeFrame()`.
+- Avoid fixed frames. All interactive elements: 44x44pt minimum.
+- Use `ContentUnavailableView` for empty states. `Label` over `HStack` for icon+text.
+- Use system hierarchical styles (`.secondary`, `.tertiary`) over manual opacity.
+- Use `bold()` over `fontWeight(.bold)`. Avoid `.caption2`.
+
+## 6.4 Animation
+
+- Use `@Animatable` macro over manual `animatableData`.
+- Never use `animation()` without a value: `.animation(.bouncy, value: score)`.
+- Chain with `withAnimation { } completion: { withAnimation { } }`.
+
+## 6.5 Swift Style
+
+| Old | Modern |
+|---|---|
+| `replacingOccurrences(of:with:)` | `replacing("a", with: "b")` |
+| `FileManager` directory lookups | `URL.documentsDirectory` |
+| `String(format:)` | `FormatStyle` APIs |
+| `filter().count` | `count(where:)` |
+| `Date()` | `Date.now` |
+| `Task.sleep(nanoseconds:)` | `Task.sleep(for:)` |
+| `if let value = value {` | `if let value {` |
+| `CGFloat` | `Double` |
+
+Omit `return` for single expressions. Use `if`/`switch` as expressions. Use `localizedStandardContains()` for filtering.
+
+## 6.6 Code Hygiene
+
+- No secrets in repos. Never `@AppStorage` for sensitive data — use Keychain.
+- SwiftLint: zero warnings.
+- Localizable.xcstrings: symbol keys, `extractionState: "manual"`, access via generated symbols.
+
+---
+
+# Part 7: Concurrency Deep Patterns
+
+Adapted from [twostraws/Swift-Concurrency-Agent-Skill](https://github.com/twostraws/Swift-Concurrency-Agent-Skill) (Paul Hudson, MIT).
+
+Supplements Part 2 concurrency checklist with grep targets, bug patterns, and Swift 6.2 features.
+
+## 7.1 Hotspot Grep Targets
+
+| Pattern | Why Suspicious |
+|---|---|
+| `DispatchQueue.main.async` | Should be `@MainActor` |
+| `DispatchQueue.global()` | Should be `@concurrent` or task groups |
+| `Task.detached` | Rarely correct |
+| `Task {` in a loop | Needs task group |
+| `withCheckedContinuation` | Must resume exactly once |
+| `@unchecked Sendable` | Should be very rare |
+| `MainActor.run {}` | May be unnecessary on `@MainActor` |
+| `!` after `await` on actor state | Reentrancy risk |
+
+## 7.2 Bug Patterns
+
+1. **Actor reentrancy check-then-act:** Capture results locally, use in-flight task dict to deduplicate.
+2. **Continuation resumed 0 times:** Audit every path. Add timeout if API drops callbacks.
+3. **Continuation resumed 2+ times:** Guard with flag or actor.
+4. **Unstructured tasks in loop:** Use `withTaskGroup`.
+5. **Swallowed errors in Task closures:** Always catch and surface. Catch `CancellationError` separately.
+6. **Blocking main actor:** Move CPU work to `@concurrent`.
+7. **Unbounded AsyncStream buffer:** Specify `.bufferingNewest(n)`.
+8. **Ignoring CancellationError:** Treat separately from real errors.
+9. **@unchecked Sendable hiding races:** Restructure to value types or actor.
+
+## 7.3 AsyncStream Best Practices
+
+Use `AsyncStream.makeStream(of:)` factory. Set buffering policy for high-throughput producers. Always `finish()` the continuation in cleanup. Use `onTermination` for resource cleanup.
+
+## 7.4 Swift 6.2 Features
+
+- **Default main actor isolation:** Per-module opt-in. Does NOT block networking.
+- **Isolated conformances:** `class User: @MainActor Equatable { }`.
+- **Nonisolated async stays on caller:** Use `@concurrent` to explicitly offload.
+- **@concurrent:** For CPU-heavy work (parsing, image processing). Not for I/O.
+- **Task.immediate:** Executes immediately until first suspension.
+- **Isolated deinit:** Runs on actor for safe teardown.
+- **Task naming:** Debug aid: `Task(name: "FetchUser") { }`.
+- **Priority escalation:** `task.escalatePriority(to: .high)` — usually automatic.
+```
