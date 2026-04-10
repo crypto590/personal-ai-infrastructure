@@ -1,7 +1,7 @@
 ---
 name: ios-swift
 effort: high
-description: "Unified iOS/Swift/SwiftUI development. MVC architecture, code review, SwiftLint, accessibility, concurrency, SwiftData, build optimization, TestFlight, and App Store distribution."
+description: "Unified iOS/Swift/SwiftUI development. MVC architecture, code review, SwiftLint, accessibility, concurrency, SwiftData, security, build optimization, TestFlight, App Store ASO, and Figma-to-SwiftUI workflows."
 metadata:
   last_reviewed: 2026-03-17
   review_cycle: 90
@@ -58,6 +58,7 @@ Specialized review agents for iOS code quality and compliance.
 | Concurrency | [review/concurrency.md](review/concurrency.md) | Actor isolation, @concurrent, data races, Sendable, Swift 6.2 |
 | Concurrency Patterns | [review/concurrency-patterns.md](review/concurrency-patterns.md) | Grep hotspots, bug patterns, async streams, Swift 6.2 features |
 | SwiftUI Tips | [review/swiftui-tips.md](review/swiftui-tips.md) | Deprecated APIs, view optimization, HIG design, modern Swift idioms |
+| Performance Audit | [review/swiftui-performance-audit.md](review/swiftui-performance-audit.md) | 6-step profiling workflow, code smells, Instruments diagnosis |
 | Pattern Validation | [review/pattern-validation.md](review/pattern-validation.md) | MVC compliance, controller/service/view/model validation, layer separation |
 | API Research | [review/api-research.md](review/api-research.md) | Apple API investigation, documentation sources, availability checks |
 
@@ -114,12 +115,33 @@ Xcode build performance analysis and optimization. Adapted from [AvdLee/Xcode-Bu
 
 ---
 
+### Security
+
+iOS/macOS security covering Keychain, biometrics, CryptoKit, Secure Enclave, and credential management. Adapted from [ivan-magda/swift-security-skill](https://github.com/ivan-magda/swift-security-skill) (Ivan Magda, MIT).
+
+| Topic | File | Summary |
+|-------|------|---------|
+| Guidelines | [security/guidelines.md](security/guidelines.md) | 7 non-negotiable rules, anti-pattern scan, CryptoKit algorithms, review checklist |
+
+**Non-Negotiable Rules:**
+1. Never ignore `OSStatus`
+2. Never use `LAContext.evaluatePolicy()` as standalone auth
+3. Never store secrets in UserDefaults/plist
+4. Never call `SecItem*` on `@MainActor`
+5. Always set `kSecAttrAccessible` explicitly
+6. Always use add-or-update pattern
+7. Always target data protection keychain on macOS
+
+---
+
 ### Workflows
 
 | Topic | File | Summary |
 |-------|------|---------|
 | Swift Migration | [workflows/swift-migration.md](workflows/swift-migration.md) | iOS to Android migration patterns (Swift/SwiftUI -> Kotlin/Compose) |
 | TestFlight Deployment | [workflows/testflight-deployment.md](workflows/testflight-deployment.md) | End-to-end TestFlight checklist — signing, archiving, upload, tester distribution |
+| App Store ASO | [workflows/app-store-aso.md](workflows/app-store-aso.md) | Metadata optimization, keyword strategy, character limits, screenshot planning |
+| Figma to SwiftUI | [workflows/figma-to-swiftui.md](workflows/figma-to-swiftui.md) | 8-step Figma MCP workflow, layout/typography/color translation, component mapping |
 
 ---
 
@@ -159,6 +181,22 @@ Running quality checks before commit
 Slow Xcode builds or build optimization
   -> Run build optimization orchestrator
   -> See: build-optimization/orchestrator.md
+
+Storing credentials, tokens, or sensitive data
+  -> Follow security guidelines (Keychain, biometrics, CryptoKit)
+  -> See: security/guidelines.md
+
+SwiftUI performance issues (janky scrolling, high CPU, excessive rebuilds)
+  -> Run performance audit workflow
+  -> See: review/swiftui-performance-audit.md
+
+Implementing design from Figma
+  -> Follow Figma-to-SwiftUI workflow (requires Figma MCP)
+  -> See: workflows/figma-to-swiftui.md
+
+Optimizing App Store listing
+  -> Follow ASO workflow for metadata and keywords
+  -> See: workflows/app-store-aso.md
 ```
 
 ---

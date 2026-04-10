@@ -1637,4 +1637,155 @@ Use `AsyncStream.makeStream(of:)` factory. Set buffering policy for high-through
 | "Conformance crosses into main actor-isolated code" | Remove type isolation or use isolated conformances (Swift 6.2) |
 | "Expression is 'async' but not marked with 'await'" | Add `await` or wrap in `Task {}` |
 | "Main actor-isolated conformance in nonisolated context" | Move usage onto matching actor or remove conformance isolation |
-```
+
+---
+
+# Part 8: Security
+
+Adapted from [ivan-magda/swift-security-skill](https://github.com/ivan-magda/swift-security-skill) (Ivan Magda, MIT).
+
+## 8.1 Non-Negotiable Rules
+
+1. **Never ignore `OSStatus`** — check after every `SecItem*` call.
+2. **Never use `LAContext.evaluatePolicy()` standalone** — bind biometrics to Keychain item with `SecAccessControl`.
+3. **Never store secrets in UserDefaults/plist/xcconfig** — Keychain only.
+4. **Never call `SecItem*` on `@MainActor`** — use background actor.
+5. **Always set `kSecAttrAccessible` explicitly** — use most restrictive constant.
+6. **Always use add-or-update pattern** — `SecItemAdd` fails if item exists; check first.
+7. **Always set `kSecUseDataProtectionKeychain: true` on macOS.**
+
+## 8.2 Accessibility Constants
+
+| Constant | When | Backup |
+|---|---|---|
+| `WhenPasscodeSetThisDeviceOnly` | Unlocked + passcode | No |
+| `WhenUnlockedThisDeviceOnly` | Unlocked | No |
+| `WhenUnlocked` | Unlocked | Yes |
+| `AfterFirstUnlockThisDeviceOnly` | After first unlock | No |
+| `AfterFirstUnlock` | After first unlock | Yes |
+
+**Default choice:** `WhenPasscodeSetThisDeviceOnly` for credentials, `AfterFirstUnlockThisDeviceOnly` for background tokens.
+
+## 8.3 CryptoKit Quick Reference
+
+| Purpose | Algorithm |
+|---|---|
+| Hashing | SHA256/384/512 |
+| HMAC | HMAC\<SHA256\> |
+| Symmetric encryption | AES.GCM (default), ChaChaPoly (no AES HW) |
+| Signing | P256.Signing (ECDSA) |
+| Key agreement | P256.KeyAgreement (ECDH) |
+| Post-quantum (iOS 26+) | HPKE, ML-KEM, ML-DSA |
+
+## 8.4 Anti-Pattern Quick Scan
+
+| Pattern | Severity |
+|---|---|
+| UserDefaults storing tokens | CRITICAL |
+| Missing OSStatus check | CRITICAL |
+| evaluatePolicy() without Keychain binding | CRITICAL |
+| Hardcoded keys in source | CRITICAL |
+| No kSecAttrAccessible | HIGH |
+| SecItem* on main thread | HIGH |
+| kSecAttrAccessibleAlways | HIGH |
+| Missing kSecUseDataProtectionKeychain (macOS) | HIGH |
+| @unchecked Sendable on Keychain wrapper | MEDIUM |
+
+---
+
+# Part 9: SwiftUI Performance Audit
+
+Adapted from [Dimillian/Skills](https://github.com/Dimillian/Skills) (Thomas Ricouard).
+
+## 9.1 Symptom Classification
+
+| Symptom | Likely Cause |
+|---|---|
+| Choppy scrolling | Identity churn, layout thrash, main-thread work |
+| Slow initial render | Heavy body computation, image decode |
+| CPU spike on interaction | Invalidation storms, broad observation |
+| Memory growth | Leaked views, unbounded caches |
+| Hang / freeze | Main-thread blocking, synchronous I/O |
+
+## 9.2 Code Smells
+
+- Broad `@Observable` fan-out (many properties, views use few)
+- `ForEach` with unstable identity (array index, computed id)
+- Sorting/filtering/formatting inside `body`
+- Nested `GeometryReader` or preference key chains
+- Large image decode without downsampling
+- `.animation()` without explicit `value`
+
+## 9.3 Remediation
+
+| Problem | Fix |
+|---|---|
+| Broad observation | Split into focused observable objects |
+| Unstable identity | Stable `Identifiable` conformance |
+| Heavy body | Move to `let`, `@State` cache, or `.task` |
+| Layout thrash | `containerRelativeFrame()`, reduce nesting |
+| Image decode | `AsyncImage`, background downsampling |
+| Broad animation | Add `value:` parameter, scope to affected views |
+
+## 9.4 Workflow
+
+1. Classify symptom → 2. Code-first review → 3. Profile with Instruments (if needed) → 4. Diagnose (map evidence to category) → 5. Remediate → 6. Verify (compare before/after metrics)
+
+---
+
+# Part 10: App Store ASO
+
+Adapted from [timbroddin/app-store-aso-skill](https://github.com/timbroddin/app-store-aso-skill) (Tim Broddin).
+
+## 10.1 Character Limits
+
+| Field | Max |
+|---|---|
+| App Name | 30 |
+| Subtitle | 30 |
+| Promotional Text | 170 |
+| Description | 4,000 |
+| Keywords | 100 (comma-separated, no spaces) |
+| What's New | 4,000 |
+
+## 10.2 Keyword Rules
+
+- Don't repeat words from App Name/Subtitle (already indexed)
+- Don't include "app" or company name
+- Singular only (Apple matches both forms)
+- No spaces after commas (saves characters)
+- Mix volume and relevance; prefer long-tail
+
+## 10.3 Screenshot Strategy
+
+1. Hero shot (most compelling feature) → 2. Core value proposition → 3. Key differentiator → 4. Social proof → 5. Secondary features. First 3 visible in search results.
+
+---
+
+# Part 11: Figma to SwiftUI
+
+Adapted from [daetojemax/figma-to-swiftui-skill](https://github.com/daetojemax/figma-to-swiftui-skill) (Ermolaev Maxim). Requires Figma MCP server.
+
+## 11.1 Workflow
+
+1. Parse Figma URL → 2. Fetch design context → 3. Capture screenshot (source of truth) → 4. Fetch design tokens → 5. Download assets (SF Symbols first) → 6. Implement in SwiftUI → 7. Validate (on request) → 8. Register Code Connect mappings
+
+## 11.2 Layout Translation
+
+| Figma | SwiftUI |
+|---|---|
+| Auto Layout vertical | `VStack` |
+| Auto Layout horizontal | `HStack` |
+| Overlapping layers | `ZStack` |
+| Fill container | `.frame(maxWidth: .infinity)` |
+| Hug contents | Default (no frame) |
+| Fixed size | `.frame(width:height:)` |
+
+## 11.3 Key Principles
+
+1. MCP output is a spec, not code — translate to idiomatic SwiftUI
+2. Project tokens override Figma values
+3. Prefer SF Symbols over custom assets
+4. Skip system elements (keyboard, status bar, native tab bar, etc.)
+5. Validate only when user requests
+6. Follow platform conventions (Dynamic Type, safe areas)
