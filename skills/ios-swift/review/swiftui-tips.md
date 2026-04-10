@@ -162,6 +162,19 @@ enum Design {
 
 ---
 
+## Navigation and Presentation
+
+- Flag all use of deprecated `NavigationView` — use `NavigationStack` or `NavigationSplitView`.
+- Prefer `navigationDestination(for:)` over `NavigationLink(destination:)`.
+- **Never** mix `navigationDestination(for:)` and `NavigationLink(destination:)` in the same hierarchy — causes significant problems.
+- `navigationDestination(for:)` must be registered once per data type — flag duplicates.
+- Attach `confirmationDialog()` to the triggering UI element (enables correct Liquid Glass animations).
+- Single-button "OK" alerts can omit the button entirely: `.alert("Title", isPresented: $showing) { }`.
+- Prefer `sheet(item:)` over `sheet(isPresented:)` for optional data (safe unwrapping).
+- When using `sheet(item:)` with a view that takes the item as its only init parameter, prefer: `sheet(item: $item, content: DetailView.init)`.
+
+---
+
 ## View Patterns
 
 - Extract button actions from body into separate methods.
