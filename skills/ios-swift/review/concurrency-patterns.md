@@ -268,3 +268,46 @@ task.escalatePriority(to: .high)
 ```
 
 Usually automatic — manual escalation is advanced usage.
+
+---
+
+## Strict Concurrency Diagnostics
+
+Common compiler errors when enabling strict concurrency, and how to fix them:
+
+### "Sending 'x' risks causing data races"
+
+Value crosses isolation boundaries while remaining accessible from the original context.
+
+**Fix progression:**
+1. Check if region-based isolation already resolves it (Swift 6.2)
+2. Use `sending` parameters
+3. Make the type conform to `Sendable`
+4. Mark function `nonisolated(nonsending)` if appropriate
+5. `@unchecked Sendable` as last resort (must verify thread safety)
+
+### "Static property 'x' is not concurrency-safe"
+
+Global or static variables lack isolation protection.
+
+**Fix:** `@MainActor` annotation (most common). For immutable types, add `Sendable` conformance. For verified immutable state, `nonisolated(unsafe)`.
+
+### "Capture of 'x' with non-sendable type in a @Sendable closure"
+
+Closures crossing boundaries capture non-Sendable values.
+
+**Fix:** Make the captured type `Sendable`, restructure to pass data as parameters, keep work on the caller's actor, or use `sending` parameters.
+
+### "Conformance crosses into main actor-isolated code"
+
+Protocol-type boundary mismatch.
+
+**Fix:** Remove isolation from the type, or use `@MainActor` protocol conformance (Swift 6.2 isolated conformances).
+
+### "Expression is 'async' but is not marked with 'await'"
+
+Calls crossing isolation boundaries need `await` or must be wrapped in `Task {}`.
+
+### "Main actor-isolated conformance cannot be used in nonisolated context"
+
+Move usage onto the matching actor, or remove isolation from the conformance if protocol methods don't require actor protection.
